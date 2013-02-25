@@ -55,13 +55,12 @@ CREATE TABLE Langue (
 )
 
 -------------------------------------
-/* IBDR 2013 – Groupe SAR          */
-/* Création de la table Pays   */
+/* IBDR 2013 - Groupe SAR          */
+/* Création de la table Pays       */
 /* Auteur  : AMIARD Raphaël - SAR  */
 /* Testeur : AMIARD Raphaël - SAR  */
 -------------------------------------
-IF EXISTS  (SELECT 1 FROM sysobjects WHERE name = 'Pays' AND xtype = 'U')  
-DROP TABLE Pays ;
+IF EXISTS (SELECT 1 FROM sysobjects WHERE name = 'Pays' AND xtype = 'U') DROP TABLE Pays ;
 CREATE TABLE Pays (
 	Nom NVARCHAR(64) NOT NULL,
 
@@ -78,7 +77,7 @@ IF EXISTS  (SELECT 1 FROM sysobjects WHERE name = 'Film' AND xtype = 'U')
 DROP TABLE Film ;
 CREATE TABLE Film (
 	TitreVF NVARCHAR(128) NOT NULL,
-	ComplementTitre NVARCHAR(256),///////
+	ComplementTitre NVARCHAR(256),
 	TitreVO NVARCHAR(128) NOT NULL,
 	AnneeSortie SMALLINT NOT NULL,	
 	Synopsis NTEXT NOT NULL,
@@ -185,8 +184,8 @@ CREATE TABLE Client (
 	Telephone2        NVARCHAR(20),	
 	NumRue			  INT NOT NULL,
 	TypeRue			  NVARCHAR(64) NOT NULL,
-	NomRue              NVARCHAR(128) NOT NULL,
-	ComplimentAdresse    NVARCHAR(256),
+	NomRue            NVARCHAR(128) NOT NULL,
+	ComplementAdresse NVARCHAR(256),
 	CodePostal        NVARCHAR(10) NOT NULL,
 	Ville             NVARCHAR(64) NOT NULL,
 	BlackListe        BIT NOT NULL,

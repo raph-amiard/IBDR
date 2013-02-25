@@ -15,28 +15,29 @@ GO
 ------------------------------------------
 ALTER TABLE [dbo].[Personne]
 ADD 
-	CONSTRAINT chk_personne_nom CHECK ([Nom] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
-	CONSTRAINT chk_personne_prenom CHECK ([Prenom] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
-	CONSTRAINT chk_personne_alias CHECK ([Alias] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_personne_nom CHECK ([Nom] NOT LIKE '%[^A-Za-z '']%'),
+	CONSTRAINT chk_personne_prenom CHECK ([Prenom] NOT LIKE '%[^A-Za-z '']%'),
+	CONSTRAINT chk_personne_alias CHECK ([Alias] NOT LIKE '%[^A-Za-z '']%'),
 	CONSTRAINT chk_personne_datenaissance CHECK ([DateNaissance] >= '01/01/1800'),
-	CONSTRAINT chk_personne_dateDeces CHECK ([DateDeces] >= '01/01/1800'),
-	CONSTRAINT chk_personne_biographie CHECK ([Biographie] NOT LIKE '%[^A-Za-z]%') -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_personne_dateDeces CHECK ([DateDeces] >= '01/01/1800')
+	-- CONSTRAINT chk_personne_biographie CHECK ([Biographie] NOT LIKE '%[^A-Za-z '']%')
 GO
 
 ------------------------------------------
 /* IBDR 2013 – Groupe SAR               */
 /* Contraintes pour la table Film       */
-/* Auteur  : MUNOZ Yupanqui - SAR       */
+/* Auteurs : MUNOZ Yupanqui - SAR       */
+/*			 AMIARD Raphaël - SAR       */
 /* Testeur : MUNOZ Yupanqui - SAR       */
 ------------------------------------------
 ALTER TABLE [dbo].[Film]
 ADD 
-	CONSTRAINT chk_film_titrevo CHECK ([TitreVO] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
-	CONSTRAINT chk_film_titrevf CHECK ([TitreVF] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_film_titrevo CHECK ([TitreVO] NOT LIKE '%[^A-Za-z '']%'),
+	CONSTRAINT chk_film_titrevf CHECK ([TitreVF] NOT LIKE '%[^A-Za-z '']%'),
 	CONSTRAINT chk_film_anneesortie CHECK (([AnneeSortie] >= '01/01/1800') AND ([AnneeSortie] < GETDATE())),
-	CONSTRAINT chk_film_complementtitre CHECK ([ComplementTitre] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
-	--CONSTRAINT chk_film_siteweb CHECK ([SiteWeb] ????), -- ????
-	CONSTRAINT chk_film_synopsis CHECK ([Synopsis] NOT LIKE '%[^A-Za-z]%') -- Incomplet, il manque accepter l'apostrophe et l'espace	
+	CONSTRAINT chk_film_complementtitre CHECK ([ComplementTitre] NOT LIKE '%[^A-Za-z '']%'),
+	CONSTRAINT chk_film_siteweb CHECK ([SiteWeb] LIKE 'http://%') -- ????
+	-- CONSTRAINT chk_film_synopsis CHECK ([Synopsis] NOT LIKE '%[^A-Za-z '']%')
 GO
 
 ------------------------------------------
@@ -47,9 +48,9 @@ GO
 ------------------------------------------
 ALTER TABLE [dbo].[Edition]
 ADD 
-	CONSTRAINT chk_edition_support CHECK ([Support] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_edition_support CHECK ([Support] NOT LIKE '%[^A-Za-z '']%'),
 	CONSTRAINT chk_edition_datesortie CHECK ([DateSortie] >= '01/01/1800'),
-	CONSTRAINT chk_edition_nomedition CHECK ([NomEdition] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_edition_nomedition CHECK ([NomEdition] NOT LIKE '%[^A-Za-z '']%'),
 	CONSTRAINT chk_edition_duree CHECK ([Duree] LIKE '[0-9][0-9]:[1-5][0-9]'), -- Un film doit avoir au moins une duree de 10 minutes
 	CONSTRAINT chk_edition_ageinterdiction CHECK ([AgeInterdiction] >= 0)
 GO
@@ -87,7 +88,7 @@ GO
 ------------------------------------------------
 ALTER TABLE [dbo].[Editeur]
 ADD 
-	CONSTRAINT chk_editeur_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z]%') -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_editeur_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z '']%')
 GO
 
 ------------------------------------------------
@@ -98,7 +99,7 @@ GO
 ------------------------------------------------
 ALTER TABLE [dbo].[Genre]
 ADD 
-	CONSTRAINT chk_genre_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z]%') -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_genre_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z '']%')
 GO
 
 ------------------------------------------------
@@ -109,7 +110,7 @@ GO
 ------------------------------------------------
 ALTER TABLE [dbo].[Langue]
 ADD 
-	CONSTRAINT chk_langue_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z]%') -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_langue_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z '']%')
 GO
 
 ------------------------------------------------
@@ -120,7 +121,7 @@ GO
 ------------------------------------------------
 ALTER TABLE [dbo].[Pays]
 ADD 
-	CONSTRAINT chk_pays_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z]%') -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_pays_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z '']%')
 GO
 
 ----------------------------------------
@@ -131,21 +132,23 @@ GO
 ----------------------------------------
 ALTER TABLE [dbo].[Client]
 ADD 
-	CONSTRAINT chk_client_nom CHECK ([Nom] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
-	CONSTRAINT chk_client_prenom CHECK ([Prenom] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_client_nom CHECK ([Nom] NOT LIKE '%[^A-Za-z '']%'),
+	CONSTRAINT chk_client_prenom CHECK ([Prenom] NOT LIKE '%[^A-Za-z '']%'),
 	CONSTRAINT chk_client_datenaissance CHECK ([DateNaissance] >= '01/01/1900'),
-	CONSTRAINT chk_client_civilite CHECK ([Civilite] NOT LIKE '%[^A-Za-z]%'),
-	CONSTRAINT chk_client_adresse CHECK ([Adresse] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_client_civilite CHECK ([Civilite] NOT LIKE '%[^A-Za-z '']%'),
+	CONSTRAINT chk_client_numrue CHECK (NumRue > 0), 
+	CONSTRAINT chk_client_nomrue CHECK ([NomRue] NOT LIKE '%[^A-Za-z '']%'),
+	CONSTRAINT chk_client_typerue CHECK (TypeRue IN ('Rue', 'Avenue', 'Passage', 'Impasse', 'Route')),
 	CONSTRAINT chk_client_codepostal CHECK ([CodePostal] LIKE '[0-9][A-Ba-b0-9][0-9][0-9][0-9]'),
-	CONSTRAINT chk_client_ville CHECK ([Ville] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_client_ville CHECK ([Ville] NOT LIKE '%[^A-Za-z '']%'),
 	CONSTRAINT chk_client_mail CHECK (
-			CHARINDEX(' ',LTRIM(RTRIM([Mail]))) = 0 -- No embedded spaces
-			AND 	LEFT(LTRIM([Mail]),1) <> '@'  -- '@' can't be the first character of an email address
-			AND 	RIGHT(RTRIM([Mail]),1) <> '.' -- '.' can't be the last character of an email address
-			AND 	CHARINDEX('.',[Mail],CHARINDEX('@',[Mail])) - CHARINDEX('@',[Mail]) > 1 -- There must be a '.' after '@'
-			AND 	LEN(LTRIM(RTRIM([Mail]))) - LEN(REPLACE(LTRIM(RTRIM([Mail])),'@','')) = 1 -- Only one '@' sign is allowed
-			AND 	CHARINDEX('.',REVERSE(LTRIM(RTRIM([Mail])))) >= 3 -- Domain name should end with at least 2 character extension
-			AND 	(CHARINDEX('.@',[Mail]) = 0 AND CHARINDEX('..',[Mail]) = 0) -- can't have patterns like '.@' and '..'
+			CHARINDEX(' ',LTRIM(RTRIM([Mail]))) = 0 
+			AND 	LEFT(LTRIM([Mail]),1) <> '@'  
+			AND 	RIGHT(RTRIM([Mail]),1) <> '.' 
+			AND 	CHARINDEX('.',[Mail],CHARINDEX('@',[Mail])) - CHARINDEX('@',[Mail]) > 1 
+			AND 	LEN(LTRIM(RTRIM([Mail]))) - LEN(REPLACE(LTRIM(RTRIM([Mail])),'@','')) = 1 
+			AND 	CHARINDEX('.',REVERSE(LTRIM(RTRIM([Mail])))) >= 3 
+			AND 	(CHARINDEX('.@',[Mail]) = 0 AND CHARINDEX('..',[Mail]) = 0)
 		),
 	CONSTRAINT chk_client_telephone1 CHECK ([Telephone1] LIKE '0'+replicate('[0-9]',9)),
 	CONSTRAINT chk_client_telephone2 CHECK ([Telephone2] LIKE '0'+replicate('[0-9]',9))
@@ -159,7 +162,7 @@ GO
 ------------------------------------------------
 ALTER TABLE [dbo].[TypeAbonnement]
 ADD 
-	CONSTRAINT chk_typeabonnement_nom CHECK ([Nom] NOT LIKE '%[^A-Za-z]%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_typeabonnement_nom CHECK ([Nom] NOT LIKE '%[^A-Za-z '']%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
 	CONSTRAINT chk_typeabonnement_prixmensuel CHECK ([PrixMensuel] > 0),
 	CONSTRAINT chk_typeabonnement_prixlocation CHECK ([PrixLocation] > 0),
 	CONSTRAINT chk_typeabonnement_maxjourslocation CHECK ([MaxJoursLocation] > 0),
@@ -177,7 +180,7 @@ GO
 ALTER TABLE [dbo].[Abonnement]
 ADD 
 	CONSTRAINT chk_abonnement_datedebut CHECK ([DateDebut] >= GETDATE()),
-	CONSTRAINT chk_abonnement_datefin CHECK ([DateFin] > [DataDebut])
+	CONSTRAINT chk_abonnement_datefin CHECK ([DateFin] > [DateDebut])
 GO
 
 ------------------------------------------------
@@ -210,5 +213,5 @@ GO
 ------------------------------------------------
 ALTER TABLE [dbo].[TypeDistinction]
 ADD 
-	CONSTRAINT chk_relance_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z]%') -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_relance_nom CHECK ([Nom]  NOT LIKE '%[^A-Za-z '']%') -- Incomplet, il manque accepter l'apostrophe et l'espace
 GO
