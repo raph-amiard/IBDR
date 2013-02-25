@@ -162,7 +162,7 @@ GO
 ------------------------------------------------
 ALTER TABLE [dbo].[TypeAbonnement]
 ADD 
-	CONSTRAINT chk_typeabonnement_nom CHECK ([Nom] NOT LIKE '%[^A-Za-z '']%'), -- Incomplet, il manque accepter l'apostrophe et l'espace
+	CONSTRAINT chk_typeabonnement_nom CHECK ([Nom] NOT LIKE '%[^A-Za-z '']%'), 
 	CONSTRAINT chk_typeabonnement_prixmensuel CHECK ([PrixMensuel] > 0),
 	CONSTRAINT chk_typeabonnement_prixlocation CHECK ([PrixLocation] > 0),
 	CONSTRAINT chk_typeabonnement_maxjourslocation CHECK ([MaxJoursLocation] > 0),
