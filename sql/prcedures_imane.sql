@@ -61,3 +61,46 @@ BEGIN
 END
 
 GO
+
+
+IF OBJECT_ID ( 'inserer_TypeAbonnement', 'P' ) IS NOT NULL 
+    DROP PROCEDURE inserer_TypeAbonnement;
+GO
+CREATE PROCEDURE [dbo].[inserer_TypeAbonnement]
+(
+
+    @Nom NVARCHAR(32) ,
+	@PrixMensuel SMALLMONEY ,
+	@PrixLocation SMALLMONEY ,
+	@MaxJoursLocation INT ,
+	@NbMaxLocations INT ,
+	@PrixRetard SMALLMONEY ,
+	@DureeEngagement INT 
+
+    
+)
+AS
+BEGIN
+	-- Insère Type Abonnement
+	INSERT INTO TypeAbonnement
+                   (
+			Nom, 
+			PrixLocation,
+			PrixMensuel,  
+			MaxJoursLocation, 
+			NbMaxLocations,
+			PrixRetard,  
+			DureeEngagement) 
+
+            VALUES (	  
+			@Nom, 
+			@PrixLocation,
+			@PrixMensuel, 
+			@MaxJoursLocation, 
+			@NbMaxLocations,
+			@PrixRetard, 
+			@DureeEngagement      
+			  )
+END
+GO
+
