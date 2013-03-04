@@ -104,3 +104,64 @@ BEGIN
 END
 GO
 
+/****** Object:  StoredProcedure [dbo].[inserer_abonnement]  ******/
+-- Ajoute un nouveau client
+IF OBJECT_ID ( 'inserer_Abonnement', 'P' ) IS NOT NULL 
+    DROP PROCEDURE inserer_Abonnement;
+GO
+CREATE PROCEDURE [dbo].[inserer_Abonnement]
+(
+	@DateDebut DATETIME ,
+	@DateFin DATETIME ,
+	@NomClient NVARCHAR(64) ,
+	@PrenomClient NVARCHAR(64) ,
+	@MailClient NVARCHAR(128) ,
+	@TypeAbonnement NVARCHAR(32) 
+
+    
+)
+AS
+BEGIN
+	-- Insère Type Abonnement
+	INSERT 	INTO dbo.Abonnement
+                   (
+    		Solde ,
+			DateDebut ,
+			DateFin ,
+			NomClient ,
+			PrenomClient ,
+			MailClient ,
+			TypeAbonnement
+			)
+
+
+            VALUES (	  	
+    		0, 
+			@DateDebut, 
+			@DateFin ,
+			@NomClient ,
+			@PrenomClient, 
+			@MailClient ,
+			@TypeAbonnement 
+			)
+			  print @@IDENTITY
+END
+GO
+
+IF OBJECT_ID ( 'ReaprovisionnementCompte', 'P' ) IS NOT NULL 
+    DROP PROCEDURE ReaprovisionnementCompte;
+GO
+CREATE PROCEDURE [dbo].[ReaprovisionnementCompte]
+    @Id INT,
+	@AjoutSolde SMALLMONEY
+
+AS
+	BEGIN
+	IF EXISTS (SELECT * FROM dbo.Abonnemet WHERE dbo.Abonnement.Id = @Id) 
+		BEGIN 
+			UPDATE dbo.Abonnement 
+			SET dbo.Abonnement.solde += @AjoutSolde
+			WHERE id = @id
+		END
+END
+GO
