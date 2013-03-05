@@ -8,8 +8,8 @@
 Use IBDR_SAR
 GO
 
-IF (OBJECT_ID('ajouter_film') IS NOT NULL)
-  DROP PROCEDURE ajouter_film
+IF (OBJECT_ID('dbo.ajouter_film') IS NOT NULL)
+  DROP PROCEDURE dbo.ajouter_film
 GO
 
 
@@ -103,10 +103,10 @@ BEGIN
 	ELSE /* film absent du catalogue, a inserer */
 		BEGIN TRY
 			Print 'L''ajout du film '+ cast(@titre_VF as varchar)+ ' dans la tables Film';
-			BEGIN TRAN
-			INSERT Film VALUES ( @titre_VF, @complement_titre, @titre_VO, 
+		
+			INSERT into Film VALUES ( @titre_VF, @complement_titre, @titre_VO, 
 								 @annee_Sortie, @synopsis, @langue, @site_web);
-			COMMIT TRAN
+			
 		END TRY
 		
 		BEGIN CATCH
@@ -181,9 +181,9 @@ BEGIN
 			Begin
 				Print 'L''acteur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
 				Begin Try
-					Begin Tran
+					
 						INSERT FilmActeur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
-					Commit Tran
+					
 				END Try
 				Begin Catch
 					Print 'Erreur lors de l''ajouter de '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar)+' dans la tables FILMActeur';
@@ -194,10 +194,10 @@ BEGIN
 				BEGIN
 					Print 'L''acteur '+cast(@nom_act as varchar)+' n''existe pas dans la table Personne, insérer dans la table Personne';				
 					Begin Try
-						Begin Tran
+					
 							INSERT Personne Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
 							INSERT FilmActeur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
-						Commit Tran
+					
 					END Try
 					Begin Catch
 						Print 'Erreur lors de l''ajouter  de l''acteur : '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar);
@@ -265,9 +265,9 @@ BEGIN
 			Begin
 				Print 'L''acteur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
 				Begin Try
-					Begin Tran
+					
 						INSERT FilmRealisateur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
-					Commit Tran
+					
 				END Try
 				Begin Catch
 					Print 'Erreur lors de l''ajouter de '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar)+' dans la tables FilmRéalisateur';
@@ -279,10 +279,10 @@ BEGIN
 				BEGIN
 					Print 'L''acteur '+cast(@nom_act as varchar)+' n''existe pas dans la table Personne, insérer dans la table Personne';				
 					Begin Try
-						Begin Tran
+						
 							INSERT Personne Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
 							INSERT FilmRealisateur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
-						Commit Tran
+						
 					END Try
 					Begin Catch
 						Print 'Erreur lors de l''ajouter de '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar);

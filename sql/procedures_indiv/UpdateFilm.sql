@@ -9,8 +9,8 @@
 Use IBDR_SAR
 GO
 
-IF OBJECT_ID ('set_date_deces_personne') IS NOT NULL
-    DROP PROCEDURE set_date_deces_personne
+IF OBJECT_ID ('dbo.set_date_deces_personne') IS NOT NULL
+    DROP PROCEDURE dbo.set_date_deces_personne
 GO
 --Mettre à jours la date déces d'une personne
 CREATE PROCEDURE [dbo].[set_date_deces_personne]
@@ -29,8 +29,8 @@ BEGIN
 END 
 GO
 
-IF OBJECT_ID ('set_bio_personne') IS NOT NULL
-    DROP PROCEDURE set_bio_personne
+IF OBJECT_ID ('dbo.set_bio_personne') IS NOT NULL
+    DROP PROCEDURE dbo.set_bio_personne
 GO
 --Mettre à jours la biographie d'une personne
 CREATE PROCEDURE [dbo].[set_bio_personne]
@@ -50,8 +50,8 @@ END
 GO
 
 
-IF OBJECT_ID ('set_siteWeb_film') IS NOT NULL
-    DROP PROCEDURE set_siteWeb_film
+IF OBJECT_ID ('dbo.set_siteWeb_film') IS NOT NULL
+    DROP PROCEDURE dbo.set_siteWeb_film
 GO
 
 --MAJ du site web du film
@@ -74,8 +74,8 @@ BEGIN
 END  
 GO
 
-IF (OBJECT_ID('add_acteur_film') IS NOT NULL)
-  DROP PROCEDURE add_acteur_film
+IF (OBJECT_ID('dbo.add_acteur_film') IS NOT NULL)
+  DROP PROCEDURE dbo.add_acteur_film
 GO
 
 -- ajouter un acteur à un film
@@ -107,8 +107,8 @@ END
 GO
 
 
-IF (OBJECT_ID('del_acteur_film') IS NOT NULL)
-  DROP PROCEDURE del_acteur_film
+IF (OBJECT_ID('dbo.del_acteur_film') IS NOT NULL)
+  DROP PROCEDURE dbo.del_acteur_film
 GO
 --supprimer le lien entre film et acteur
 CREATE PROCEDURE [dbo].[del_acteur_film]
@@ -137,8 +137,8 @@ Begin
 END		
 GO
 
-IF (OBJECT_ID('add_realisateur_film') IS NOT NULL)
-  DROP PROCEDURE add_realisateur_film
+IF (OBJECT_ID('dbo.add_realisateur_film') IS NOT NULL)
+  DROP PROCEDURE dbo.add_realisateur_film
 GO
 
 CREATE PROCEDURE [dbo].[add_realisateur_film]
@@ -169,8 +169,8 @@ End
 GO
 
 
-IF (OBJECT_ID('del_realisateur_film') IS NOT NULL)
-  DROP PROCEDURE del_realisateur_film
+IF (OBJECT_ID('dbo.del_realisateur_film') IS NOT NULL)
+  DROP PROCEDURE dbo.del_realisateur_film
 GO
 
 CREATE PROCEDURE [dbo].[del_realisateur_film]
@@ -200,8 +200,8 @@ END
 GO
 
 
-IF (OBJECT_ID('add_producteur_film') IS NOT NULL)
-  DROP PROCEDURE add_producteur_film
+IF (OBJECT_ID('dbo.add_producteur_film') IS NOT NULL)
+  DROP PROCEDURE dbo.add_producteur_film
 GO
 
 CREATE PROCEDURE [dbo].[add_producteur_film]
@@ -232,8 +232,8 @@ End
 GO
 
 
-IF (OBJECT_ID('del_producteur_film') IS NOT NULL)
-  DROP PROCEDURE del_producteur_film
+IF (OBJECT_ID('dbo.del_producteur_film') IS NOT NULL)
+  DROP PROCEDURE dbo.del_producteur_film
 GO
 CREATE PROCEDURE [dbo].[del_producteur_film]
 	@titre_VF NVARCHAR(128),
@@ -263,8 +263,8 @@ GO
 
 
 
-IF (OBJECT_ID('add_producteur_film') IS NOT NULL)
-  DROP PROCEDURE add_producteur_film
+IF (OBJECT_ID('dbo.add_producteur_film') IS NOT NULL)
+  DROP PROCEDURE dbo.add_producteur_film
 GO
 --ajouter une personne(acteur, réalisateur, producteur) à la table Personne
 CREATE PROCEDURE [dbo].[add_producteur_film]
@@ -287,8 +287,8 @@ Begin
 End
 GO
 
-IF (OBJECT_ID('add_distinction_film') IS NOT NULL)
-  DROP PROCEDURE add_distinction_film
+IF (OBJECT_ID('dbo.add_distinction_film') IS NOT NULL)
+  DROP PROCEDURE dbo.add_distinction_film
 GO
 --ajouter une personne(acteur, réalisateur, producteur) à la table Personne
 CREATE PROCEDURE [dbo].[add_distinction_film]
@@ -315,8 +315,8 @@ End
 
 GO
 
-IF (OBJECT_ID('add_distinction_personne') IS NOT NULL)
-  DROP PROCEDURE add_distinction_personne
+IF (OBJECT_ID('dbo.add_distinction_personne') IS NOT NULL)
+  DROP PROCEDURE dbo.add_distinction_personne
 GO
 --ajouter une personne(acteur, réalisateur, producteur) à la table Personne
 CREATE PROCEDURE [dbo].[add_distinction_personne]

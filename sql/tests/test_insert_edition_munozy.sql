@@ -1,14 +1,11 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
-/* Test de la procedure pour ajouter un ensemble d'exemplaires (FilmStock)     */
+/* Test de la procedure pour ajouter une Edition                               */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
 
 /** Supprimer données **/
-DELETE FROM [IBDR_SAR].[dbo].[FilmStock]
-GO
-
 DELETE FROM [IBDR_SAR].[dbo].[EditeurEdition]
 GO
 
@@ -28,7 +25,13 @@ DELETE FROM [IBDR_SAR].[dbo].[Pays]
 GO
 
 /** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
+SELECT * FROM [IBDR_SAR].[dbo].[Edition]
+GO
+
+SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
+GO
+
+SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
 GO
 
 /** Ajouter données necessaires **/
@@ -38,6 +41,16 @@ INSERT INTO [IBDR_SAR].[dbo].[Langue]
      VALUES
            ('Portugue')
 GO
+
+INSERT INTO [IBDR_SAR].[dbo].[Langue]
+           ([Nom])
+     VALUES
+           ('Anglais')
+           
+INSERT INTO [IBDR_SAR].[dbo].[Langue]
+           ([Nom])
+     VALUES
+           ('Français')
 
 INSERT INTO [IBDR_SAR].[dbo].[Film]
            ([TitreVF]
@@ -59,7 +72,8 @@ INSERT INTO [IBDR_SAR].[dbo].[Pays]
            ('Brésil')
 GO
 
-EXEC proc_insert_edition 
+/** Exécution de la procedure **/
+EXEC dbo.edition_creer 
 		@FilmTitreVF = 'Qu''il était bon mon petit français',
 		@FilmAnneeSortie = '1971',
 		@Duree = '01:24:00',
@@ -69,20 +83,16 @@ EXEC proc_insert_edition
 		@Pays = 'Brésil',
 		@NomEdition = 'Box Edition',
 		@AgeInterdiction = 18,
-		@ListEditeurs = '|Globo Filmes|Condor Filmes|'
-
-/** Exécution de la procedure **/
-
-DECLARE @ID_EDITION INT
-
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
-
-EXEC proc_insert_exemplaire
-	@DateArrivee = '03/03/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
-	@Usure  = 0,
-	@IdEdition = @ID_EDITION,
-	@Nombre = 3
+		@ListEditeurs = '|Globo Filmes|Condor Filmes|',
+		@ListLangueAudio = '|Portugue|Français|',
+		@ListLangueSousTitres = '|Portugue|Français|Anglais|'
 		
 /** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
+SELECT * FROM [IBDR_SAR].[dbo].[Edition]
+GO
+
+SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
+GO
+
+SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
 GO

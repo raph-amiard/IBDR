@@ -51,7 +51,7 @@ ADD
 	CONSTRAINT chk_edition_support CHECK ([Support] NOT LIKE '%[^A-Za-z ''-]%'),
 	CONSTRAINT chk_edition_datesortie CHECK ([DateSortie] >= '01/01/1800'),
 	CONSTRAINT chk_edition_nomedition CHECK ([NomEdition] NOT LIKE '%[^A-Za-z ''-]%'),
-	CONSTRAINT chk_edition_duree CHECK ([Duree] LIKE '[0-9][0-9]:[1-5][0-9]'), -- Un film doit avoir au moins une duree de 10 minutes
+	CONSTRAINT chk_edition_duree CHECK ([Duree] > '00:10:00'),
 	CONSTRAINT chk_edition_ageinterdiction CHECK ([AgeInterdiction] >= 0)
 GO
 
@@ -77,7 +77,7 @@ ALTER TABLE [dbo].[Location]
 ADD 
 	CONSTRAINT chk_location_datelocation CHECK ([DateLocation] >= GETDATE()),
 	CONSTRAINT chk_location_dateretourprev CHECK ([DateRetourPrev] > [DateLocation]),
-	CONSTRAINT chk_location_dateretoureff CHECK (([DateRetourEff] <= [DateRetourPrev]) AND ([DateRetourEff] > [DateLocation]))
+	CONSTRAINT chk_location_dateretoureff CHECK ([DateRetourEff] > [DateLocation])
 GO
 
 ------------------------------------------------

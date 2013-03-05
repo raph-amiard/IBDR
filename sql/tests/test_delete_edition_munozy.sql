@@ -1,9 +1,10 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
-/* Test de la procedure pour mettre à jour une Edition                         */
+/* Test de la procedure pour supprimer une Edition                             */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
+
 /** Supprimer données **/
 DELETE FROM [IBDR_SAR].[dbo].[Location]
 GO
@@ -21,12 +22,6 @@ DELETE FROM [IBDR_SAR].[dbo].[FilmStock]
 GO
 
 DELETE FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[EditionLangueAudio]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[EditionLangueSousTitres]
 GO
 
 DELETE FROM [IBDR_SAR].[dbo].[Edition]
@@ -59,7 +54,7 @@ INSERT INTO [IBDR_SAR].[dbo].[Langue]
 INSERT INTO [IBDR_SAR].[dbo].[Langue]
            ([Nom])
      VALUES
-           ('Français')
+           ('Français')           
 
 INSERT INTO [IBDR_SAR].[dbo].[Film]
            ([TitreVF]
@@ -78,31 +73,26 @@ INSERT INTO [IBDR_SAR].[dbo].[Pays]
            ([Nom])
      VALUES
            ('Brésil')
-           
-INSERT INTO [IBDR_SAR].[dbo].[Pays]
-           ([Nom])
-     VALUES
-           ('France')   
 
-EXEC proc_insert_edition 
+EXEC dbo.edition_creer 
 		@FilmTitreVF = 'Qu''il était bon mon petit français',
 		@FilmAnneeSortie = '1971',
 		@Duree = '01:24:00',
 		@DateSortie = '20/02/2011',
 		@Support = 'DVD',
-		@Couleur = 0,
+		@Couleur = 1,
 		@Pays = 'Brésil',
 		@NomEdition = 'Box Edition',
 		@AgeInterdiction = 18,
 		@ListEditeurs = '|Globo Filmes|Condor Filmes|',
 		@ListLangueAudio = '|Portugue|Français|',
 		@ListLangueSousTitres = '|Portugue|Français|Anglais|'
-
+		
 DECLARE @ID_EDITION INT
 SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
 
-EXEC proc_insert_exemplaire
-	@DateArrivee = '03/03/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
+EXEC dbo.filmstock_ajouter
+	@DateArrivee = '10/03/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
 	@Usure  = 0,
 	@IdEdition = @ID_EDITION,
 	@Nombre = 1
@@ -136,7 +126,7 @@ INSERT INTO [IBDR_SAR].[dbo].[Client]
            ('Celib'
            ,'Derrida'
            ,'Ambroise'
-           ,'01/01/1950'
+           ,'01/01/1950' --convert(date,'01/01/1950',103)
            ,'ambroise.derrida@cosmic.net'
            ,'0108050133'
            ,'0123456789'
@@ -157,8 +147,8 @@ INSERT INTO [IBDR_SAR].[dbo].[Abonnement]
            ,[TypeAbonnement])
      VALUES
            (1
-           ,convert(datetime,'2013-02-23 00:00:00.000',21)
-           ,convert(datetime,'2013-05-24 00:00:00.000',21)
+           ,'2013-05-23 00:00:00.000'
+           ,'2013-05-24 00:00:00.000'
            ,'Derrida'
            ,'Ambroise'
            ,'ambroise.derrida@cosmic.net'
@@ -176,13 +166,15 @@ INSERT INTO [IBDR_SAR].[dbo].[Location]
            ,[DateLocation]
            ,[DateRetourPrev]
            ,[DateRetourEff]
-           ,[FilmStockId])
+           ,[FilmStockId]
+           ,[Confirmee])
      VALUES
            (@ID_ABONNEMENT
-           , '03/03/2013 10:00:00:000'
            , '05/03/2013 10:00:00:000'
            , '07/03/2013 10:00:00:000'
-           ,@ID_FILMSTOCK)
+           , '07/03/2013 10:00:00:000'
+           ,@ID_FILMSTOCK
+           ,1)
            
 DECLARE @ID_LOCATION INT
 SELECT @ID_LOCATION = @@IDENTITY
@@ -201,134 +193,43 @@ GO
 SELECT * FROM [IBDR_SAR].[dbo].[Edition]
 GO
 
+SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
+GO
+
+SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
+GO
+
+SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
+GO
+	
+SELECT * FROM [IBDR_SAR].[dbo].[Location]
+GO
+
+SELECT * FROM [IBDR_SAR].[dbo].[RelanceRetard]
+GO
+
 /** Exécution de la procedure **/
 DECLARE @ID_EDITION INT
 SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
 
-EXEC proc_update_nom_edition
-	@ID_Edition = @ID_EDITION,
-	@NomEdition = 'Box Special Edition'
-
-EXEC  proc_update_duree_edition
-	@ID_Edition = @ID_EDITION,
-	@Duree = '01:54:00'
-	
-EXEC proc_update_date_sortie_edition
-	@ID_Edition = @ID_EDITION,
-	@DateSortie = '25/02/2012'
-
-EXEC proc_update_support_edition
-	@ID_Edition = @ID_EDITION,
-	@Support = 'Blu-ray'
-	
-EXEC proc_update_couleur_edition
-	@ID_Edition = @ID_EDITION,
-	@Couleur = 1
-
-EXEC proc_update_pays_edition
-	@ID_Edition = @ID_EDITION,
-	@Pays = 'France'
+EXEC dbo.edition_supprimer
+	@ID_Edition = @ID_EDITION
 		
-EXEC proc_update_age_interdi_edition
-	@ID_Edition = @ID_EDITION,
-	@AgeInterdiction = 12
-	
 /** L'état de la base données par rapport les tables qui ont été modifiés **/
 SELECT * FROM [IBDR_SAR].[dbo].[Edition]
-
-/** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[EditionLangueAudio] 
 GO
 
-SELECT * FROM [IBDR_SAR].[dbo].[EditionLangueSousTitres] 
-GO
-
-/** Exécution de la procedure **/
-DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Special Edition'
-
-EXEC proc_update_delete_langueaudio_edition
-	@ID_Edition = @ID_EDITION,
-	@LangueAudio = 'Portugue'
-
-EXEC proc_update_delete_languesoustitres_edition
-	@ID_Edition = @ID_EDITION,
-	@LangueSousTitres = 'Portugue'
-	
-/** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[EditionLangueAudio] 
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[EditionLangueSousTitres] 
-GO
-
-/** Exécution de la procedure **/
-DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Special Edition'
-
-EXEC proc_update_insert_langueaudio_edition
-	@ID_Edition = @ID_EDITION,
-	@LangueAudio = 'Portugue'
-
-EXEC proc_update_insert_languesoustitres_edition
-	@ID_Edition = @ID_EDITION,
-	@LangueSousTitres = 'Portugue'
-	
-/** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[EditionLangueAudio] 
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[EditionLangueSousTitres] 
-GO
-
-/** L'état de la base données par rapport les tables qui seront modifiés **/
 SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
 GO
 
 SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
 GO
 
-/** Exécution de la procedure **/
-DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Special Edition'
-
-EXEC proc_update_supp_editeur_edition
-	@ID_Edition = @ID_EDITION,
-	@NomEditeur = 'Globo Filmes'
-	
-/** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
+SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
 GO
 
-SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
+SELECT * FROM [IBDR_SAR].[dbo].[Location]
 GO
 
-/** Exécution de la procedure **/
-DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Special Edition'
-
-EXEC proc_update_ajout_editeur_edition
-	@ID_Edition = @ID_EDITION,
-	@NomEditeur = 'Globo'
-	
-/** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
-
-/** Exécution de la procedure **/
-DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Special Edition'
-
-EXEC proc_update_editeur
-	@NomEditeur = 'Globo',
-	@NomEditeurNouv = 'Globo Filmes'
-	
-/** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
+SELECT * FROM [IBDR_SAR].[dbo].[RelanceRetard]
 GO

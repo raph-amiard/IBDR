@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
-/* Test de la procedure pour supprimer une Edition                             */
+/* Test de la procedure pour supprimer un exemplaire (FilmStock)               */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
@@ -45,16 +45,6 @@ INSERT INTO [IBDR_SAR].[dbo].[Langue]
            ([Nom])
      VALUES
            ('Portugue')
-           
-INSERT INTO [IBDR_SAR].[dbo].[Langue]
-           ([Nom])
-     VALUES
-           ('Anglais')
-           
-INSERT INTO [IBDR_SAR].[dbo].[Langue]
-           ([Nom])
-     VALUES
-           ('Français')           
 
 INSERT INTO [IBDR_SAR].[dbo].[Film]
            ([TitreVF]
@@ -74,7 +64,7 @@ INSERT INTO [IBDR_SAR].[dbo].[Pays]
      VALUES
            ('Brésil')
 
-EXEC proc_insert_edition 
+EXEC dbo.edition_creer 
 		@FilmTitreVF = 'Qu''il était bon mon petit français',
 		@FilmAnneeSortie = '1971',
 		@Duree = '01:24:00',
@@ -85,14 +75,14 @@ EXEC proc_insert_edition
 		@NomEdition = 'Box Edition',
 		@AgeInterdiction = 18,
 		@ListEditeurs = '|Globo Filmes|Condor Filmes|',
-		@ListLangueAudio = '|Portugue|Français|',
-		@ListLangueSousTitres = '|Portugue|Français|Anglais|'
-		
+		@ListLangueAudio = '|Portugue|',
+		@ListLangueSousTitres = '|Portugue|'
+
 DECLARE @ID_EDITION INT
 SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
 
-EXEC proc_insert_exemplaire
-	@DateArrivee = '03/03/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
+EXEC dbo.filmstock_ajouter
+	@DateArrivee = '10/03/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
 	@Usure  = 0,
 	@IdEdition = @ID_EDITION,
 	@Nombre = 1
@@ -147,8 +137,8 @@ INSERT INTO [IBDR_SAR].[dbo].[Abonnement]
            ,[TypeAbonnement])
      VALUES
            (1
-           ,convert(datetime,'2013-02-23 00:00:00.000',21)
-           ,convert(datetime,'2013-05-24 00:00:00.000',21)
+           ,convert(datetime,'2013-03-23 00:00:00.000',21)
+           ,convert(datetime,'2013-03-24 00:00:00.000',21)
            ,'Derrida'
            ,'Ambroise'
            ,'ambroise.derrida@cosmic.net'
@@ -166,13 +156,16 @@ INSERT INTO [IBDR_SAR].[dbo].[Location]
            ,[DateLocation]
            ,[DateRetourPrev]
            ,[DateRetourEff]
-           ,[FilmStockId])
+           ,[FilmStockId]
+           ,[Confirmee]
+           )
      VALUES
            (@ID_ABONNEMENT
-           , '03/03/2013 10:00:00:000'
            , '05/03/2013 10:00:00:000'
-           , '07/03/2013 10:00:00:000'
-           ,@ID_FILMSTOCK)
+           , '08/03/2013 10:00:00:000'
+           , '08/03/2013 10:00:00:000'
+           ,@ID_FILMSTOCK,
+           1)
            
 DECLARE @ID_LOCATION INT
 SELECT @ID_LOCATION = @@IDENTITY
@@ -188,15 +181,6 @@ INSERT INTO [IBDR_SAR].[dbo].[RelanceRetard]
 GO
 
 /** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[Edition]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
-
 SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
 GO
 	
@@ -207,22 +191,13 @@ SELECT * FROM [IBDR_SAR].[dbo].[RelanceRetard]
 GO
 
 /** Exécution de la procedure **/
-DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
+DECLARE @ID_FILMSTOCK INT
+SELECT @ID_FILMSTOCK = [ID] FROM  [IBDR_SAR].[dbo].[FilmStock]
 
-EXEC proc_delete_edition
-	@ID_Edition = @ID_EDITION
+EXEC dbo.filmstock_supprimer
+	@ID_FilmStock = @ID_FILMSTOCK
 		
 /** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[Edition]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
-
 SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
 GO
 
