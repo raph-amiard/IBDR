@@ -1,5 +1,10 @@
-﻿/****** Object:  StoredProcedure [dbo].[inserer_client]  ******/
--- Ajoute un nouveau client
+﻿---------------------------------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                                                      */
+/* Ajoute un nouveau client (Clien)                                            */
+/* Auteurs  : RAHMOUN Imane - SAR   ,  GOUYOU Ludovic - TA                     */
+/* Testeur : GOUYOU Ludovic - TA                                               */
+---------------------------------------------------------------------------------
+
 IF OBJECT_ID ( 'inserer_client', 'P' ) IS NOT NULL 
     DROP PROCEDURE inserer_client;
 GO
@@ -14,8 +19,8 @@ CREATE PROCEDURE [dbo].[inserer_client]
 	@Mail              NVARCHAR(128),
 	@Telephone1        NVARCHAR(20),
 	@Telephone2        NVARCHAR(20),	
-	@NumRue		   INT,
-	@TypeRue	   NVARCHAR(64),
+	@NumRue		       INT,
+	@TypeRue	       NVARCHAR(64),
 	@NomRue            NVARCHAR(128),
 	@ComplementAdresse NVARCHAR(256),
 	@CodePostal        NVARCHAR(10),
@@ -62,6 +67,12 @@ END
 
 GO
 
+---------------------------------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                                                      */
+/* Ajoute un nouveau Type d'abonnement (TypeAbonnement)                        */
+/* Auteurs  : RAHMOUN Imane - SAR   ,  GOUYOU Ludovic - TA                     */
+/* Testeur : GOUYOU Ludovic - TA                                               */
+---------------------------------------------------------------------------------
 
 IF OBJECT_ID ( 'inserer_TypeAbonnement', 'P' ) IS NOT NULL 
     DROP PROCEDURE inserer_TypeAbonnement;
@@ -104,8 +115,12 @@ BEGIN
 END
 GO
 
-/****** Object:  StoredProcedure [dbo].[inserer_abonnement]  ******/
--- Ajoute un nouveau client
+---------------------------------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                                                      */
+/* Ajoute un nouveau abonnement (Abonnement)                                   */
+/* Auteurs  : RAHMOUN Imane - SAR   ,  GOUYOU Ludovic - TA                     */
+/* Testeur : GOUYOU Ludovic - TA                                               */
+---------------------------------------------------------------------------------
 IF OBJECT_ID ( 'inserer_Abonnement', 'P' ) IS NOT NULL 
     DROP PROCEDURE inserer_Abonnement;
 GO
@@ -148,20 +163,28 @@ BEGIN
 END
 GO
 
+---------------------------------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                                                      */
+/* Réapprovisionne un abonement (Abonnement)                                   */
+/* Auteurs  : RAHMOUN Imane - SAR   ,  GOUYOU Ludovic - TA                     */
+/* Testeur : GOUYOU Ludovic - TA                                               */
+---------------------------------------------------------------------------------
 IF OBJECT_ID ( 'ReaprovisionnementCompte', 'P' ) IS NOT NULL 
     DROP PROCEDURE ReaprovisionnementCompte;
 GO
 CREATE PROCEDURE [dbo].[ReaprovisionnementCompte]
     @Id INT,
 	@AjoutSolde SMALLMONEY
-
 AS
 	BEGIN
-	IF EXISTS (SELECT * FROM dbo.Abonnemet WHERE dbo.Abonnement.Id = @Id) 
-		BEGIN 
-			UPDATE dbo.Abonnement 
-			SET dbo.Abonnement.solde += @AjoutSolde
-			WHERE id = @id
-		END
+	IF NOT EXISTS (SELECT * FROM Abonnement WHERE Id = @Id) 
+	BEGIN
+		DECLARE @mess VARCHAR(1000)
+		SET @mess = 'Abonnement ' + CONVERT (varchar, @Id) + ' inconnu'
+		RAISERROR (@mess, 17, 2)
+	END
+	UPDATE dbo.Abonnement 
+	SET dbo.Abonnement.solde += @AjoutSolde
+	WHERE id = @id
 END
 GO
