@@ -9,7 +9,7 @@ PRINT 'Avant execution'
 select * from TypeAbonnement
 
 BEGIN TRY
-	EXEC inserer_TypeAbonnement 
+	EXEC type_abonnement_creer 
 		@Nom = 'Complet' ,
 		@PrixMensuel = 100 ,
 		@PrixLocation =0.05 ,
@@ -24,7 +24,7 @@ END CATCH
 
 PRINT 'Ajout du même TypeAbonnement'
 BEGIN TRY
-	EXEC inserer_TypeAbonnement 
+	EXEC type_abonnement_creer 
 		@Nom = 'Complet' ,
 		@PrixMensuel = 100 ,
 		@PrixLocation =0.05 ,

@@ -9,7 +9,7 @@ PRINT 'Avant execution'
 select * from Abonnement
 
 BEGIN TRY
-	EXEC ReaprovisionnementCompte
+	EXEC compte_reapprovisioner
 		@Id = 0,
 		@AjoutSolde = 20
 END TRY
@@ -19,7 +19,7 @@ END CATCH
 
 PRINT 'Ajout abonnement identique'
 BEGIN TRY
-	EXEC ReaprovisionnementCompte
+	EXEC compte_reapprovisioner
 		@Id = 70,
 		@AjoutSolde = 20
 END TRY

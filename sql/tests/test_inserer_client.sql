@@ -10,7 +10,7 @@ select * from Client
 Declare @date DATE
 SET @date = '01/01/1960'
 BEGIN TRY
-	EXEC inserer_client
+	EXEC client_creer
 		@Civilite='Monsieur',
 		@Nom='DUPOND',
 		@Prenom='François',
@@ -31,7 +31,7 @@ END CATCH
 
 PRINT 'Ajout de la même personne'
 BEGIN TRY
-	EXEC inserer_client
+	EXEC client_creer
 		@Civilite='Monsieur',
 		@Nom='DUPOND',
 		@Prenom='François',

@@ -15,7 +15,7 @@ SET @dateDebut = CURRENT_TIMESTAMP-50;
 Declare @dateFin DATE
 SET @dateFin = CURRENT_TIMESTAMP+40;
 BEGIN TRY
-	EXEC inserer_Abonnement
+	EXEC abonnement_creer
 		@DateDebut =  @dateDebut,
 		@DateFin = @dateFin,
 		@NomClient =  'JEAN',
@@ -29,7 +29,7 @@ END CATCH
 
 PRINT 'Ajout abonnement identique'
 BEGIN TRY
-	EXEC inserer_Abonnement
+	EXEC abonnement_creer
 		@DateDebut =  @dateDebut,
 		@DateFin = @dateFin,
 		@NomClient =  'JEAN',
