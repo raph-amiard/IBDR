@@ -55,7 +55,7 @@ EXEC dbo.filmstock_ajouter
 	@DateArrivee = '01/04/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
 	@Usure  = 0,
 	@IdEdition = @ID_EDITION,
-	@Nombre = 3
+	@Nombre = 1
 		
 Declare @dateDebut DATE
 SET @dateDebut = CURRENT_TIMESTAMP
@@ -70,19 +70,47 @@ EXEC dbo.abonnement_creer
 	@TypeAbonnement = 'Classic'
 
 DECLARE @date_fin_loc DATETIME
+DECLARE @date_debut_res_1 DATETIME
+DECLARE @date_fin_res_1 DATETIME
 DECLARE @id_abonnement INT
 SELECT @id_abonnement = @@identity
-SELECT @date_fin_loc = DATEADD(day, 1, CURRENT_TIMESTAMP)
+SELECT @date_fin_loc = DATEADD(day, 2, CURRENT_TIMESTAMP)
+SELECT @date_debut_res_1 = DATEADD(day, 1, CURRENT_TIMESTAMP)
+SELECT @date_debut_res_2 = DATEADD(day, 5, CURRENT_TIMESTAMP)
+SELECT @date_debut_res_3 = DATEADD(day, 3, CURRENT_TIMESTAMP)
+SELECT @date_fin_res = DATEADD(day, 8, CURRENT_TIMESTAMP)
 
 
 -- TODO : Montrer les tables avant
 PRINT 'Avant execution'
 select * from Location
 
+PRINT 'Test location'
 EXEC dbo.location_ajouter
 	@id_abonnement = @id_abonnement,
 	@id_edition = @id_edition,
 	@date_fin = @date_fin_loc
+
+PRINT 'Test reservation impossible'
+EXEC dbo.reservation_ajouter
+	@id_abonnement = @id_abonnement,
+	@id_edition = @id_edition,
+	@date_debut = @date_debut_res_1
+	@date_fin = @date_fin_res
+
+PRINT 'Test reservation possible'
+EXEC dbo.reservation_ajouter
+	@id_abonnement = @id_abonnement,
+	@id_edition = @id_edition,
+	@date_debut = @date_debut_res_2
+	@date_fin = @date_fin_res
+
+PRINT 'Test reservation impossible 2'
+EXEC dbo.reservation_ajouter
+	@id_abonnement = @id_abonnement,
+	@id_edition = @id_edition,
+	@date_debut = @date_debut_res_3
+	@date_fin = @date_fin_res
 
 -- TODO : Montrer les tables après
 PRINT 'Après execution'
