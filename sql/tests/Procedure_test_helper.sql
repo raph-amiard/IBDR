@@ -1,4 +1,7 @@
-﻿IF OBJECT_ID ( '_Vide_BD', 'P' ) IS NOT NULL 
+﻿USE IBDR_SAR
+GO
+
+IF OBJECT_ID ( '_Vide_BD', 'P' ) IS NOT NULL 
     DROP PROCEDURE _Vide_BD;
 GO
 
@@ -42,7 +45,7 @@ AS
 BEGIN
 	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement]) VALUES (N'Basic', CAST(10.0000 AS SmallMoney), CAST(1.0000 AS SmallMoney), 2, 2, CAST(10.0000 AS SmallMoney), 31)
 	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement]) VALUES (N'Basic évolué', CAST(40.0000 AS SmallMoney), CAST(0.5000 AS SmallMoney), 5, 4, CAST(10.0000 AS SmallMoney), 360)
-	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement]) VALUES (N'Classic', CAST(20.0000 AS SmallMoney), CAST(1.0000 AS SmallMoney), 5, 4, CAST(10.0000 AS SmallMoney), 31)
+	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement]) VALUES (N'Classic', CAST(20.0000 AS SmallMoney), CAST(1.0000 AS SmallMoney), 10, 4, CAST(10.0000 AS SmallMoney), 31)
 END
 GO
 
@@ -52,9 +55,9 @@ BEGIN
 	EXEC _Ajout_Type_Abonnement
 	EXEC _Ajout_Client
 	SET IDENTITY_INSERT [dbo].[Abonnement] ON
-	INSERT INTO [dbo].[Abonnement] ([Id], [Solde], [DateDebut], [DateFin], [NomClient], [PrenomClient], [MailClient], [TypeAbonnement]) VALUES (0, CAST(10.0000 AS SmallMoney), CURRENT_TIMESTAMP-30, CURRENT_TIMESTAMP+60, N'DUPONT', N'Lucien', N'DUPONT.Lucien@gmail.com', N'Basic')
-	INSERT INTO [dbo].[Abonnement] ([Id], [Solde], [DateDebut], [DateFin], [NomClient], [PrenomClient], [MailClient], [TypeAbonnement]) VALUES (1, CAST(20.0000 AS SmallMoney), CURRENT_TIMESTAMP-30, CURRENT_TIMESTAMP+30, N'DUPONT', N'Lucienne', N'DUPONT.Lucienne@gmail.com', N'Basic')
-	INSERT INTO [dbo].[Abonnement] ([Id], [Solde], [DateDebut], [DateFin], [NomClient], [PrenomClient], [MailClient], [TypeAbonnement]) VALUES (2, CAST(30.0000 AS SmallMoney), CURRENT_TIMESTAMP-60, CURRENT_TIMESTAMP-40, N'DUPONT', N'Lucien', N'DUPONT.Lucien@gmail.com', N'Classic')
+	INSERT INTO [dbo].[Abonnement] ([Id], [Solde], [DateDebut], [DateFin], [NomClient], [PrenomClient], [MailClient], [TypeAbonnement]) VALUES (0, CAST(10.0000 AS SmallMoney), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP+60, N'DUPONT', N'Lucien', N'DUPONT.Lucien@gmail.com', N'Basic')
+	INSERT INTO [dbo].[Abonnement] ([Id], [Solde], [DateDebut], [DateFin], [NomClient], [PrenomClient], [MailClient], [TypeAbonnement]) VALUES (1, CAST(20.0000 AS SmallMoney), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP+30, N'DUPONT', N'Lucienne', N'DUPONT.Lucienne@gmail.com', N'Basic')
+	INSERT INTO [dbo].[Abonnement] ([Id], [Solde], [DateDebut], [DateFin], [NomClient], [PrenomClient], [MailClient], [TypeAbonnement]) VALUES (2, CAST(30.0000 AS SmallMoney), CURRENT_TIMESTAMP, CURRENT_TIMESTAMP+40, N'DUPONT', N'Lucien', N'DUPONT.Lucien@gmail.com', N'Classic')
 	SET IDENTITY_INSERT [dbo].[Abonnement] OFF
 END
 GO

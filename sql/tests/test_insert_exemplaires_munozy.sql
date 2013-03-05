@@ -5,6 +5,9 @@
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
 
+USE IBDR_SAR
+GO
+
 /** Supprimer données **/
 DELETE FROM [IBDR_SAR].[dbo].[FilmStock]
 GO

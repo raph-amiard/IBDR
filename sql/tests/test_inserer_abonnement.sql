@@ -2,6 +2,9 @@
 /* IBDR 2013 - Groupe SAR                                                      */
 /* Auteurs  : GOUYOU Ludovic - TA                                              */
 ---------------------------------------------------------------------------------
+USE IBDR_SAR
+GO
+
 EXEC _Vide_BD
 EXEC _Ajout_Abonnement
 PRINT 'Avant execution'

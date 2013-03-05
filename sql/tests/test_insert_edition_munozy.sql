@@ -5,6 +5,9 @@
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
 
+USE IBDR_SAR
+GO
+
 /** Supprimer données **/
 EXEC _Vide_BD
 

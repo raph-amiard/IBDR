@@ -147,8 +147,8 @@ INSERT INTO [IBDR_SAR].[dbo].[Abonnement]
            ,[TypeAbonnement])
      VALUES
            (1
-           ,'2013-05-23 00:00:00.000'
-           ,'2013-05-24 00:00:00.000'
+           ,'23/05/2013 00:00:00.000'
+           ,'24/05/2013 00:00:00.000'
            ,'Derrida'
            ,'Ambroise'
            ,'ambroise.derrida@cosmic.net'
@@ -170,9 +170,9 @@ INSERT INTO [IBDR_SAR].[dbo].[Location]
            ,[Confirmee])
      VALUES
            (@ID_ABONNEMENT
-           , '05/03/2013 10:00:00:000'
-           , '07/03/2013 10:00:00:000'
-           , '07/03/2013 10:00:00:000'
+           , '05/04/2013 10:00:00:000'
+           , '07/04/2013 10:00:00:000'
+           , '07/04/2013 10:00:00:000'
            ,@ID_FILMSTOCK
            ,1)
            

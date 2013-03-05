@@ -2,6 +2,9 @@
 /* IBDR 2013 - Groupe SAR                                                      */
 /* Auteurs  : AMIARD Raphaël - SAR                                             */
 ---------------------------------------------------------------------------------
+USE IBDR_SAR
+GO
+
 EXEC _Vide_BD
 EXEC _Ajout_Abonnement
 
@@ -58,9 +61,10 @@ EXEC dbo.filmstock_ajouter
 	@Nombre = 1
 		
 Declare @dateDebut DATE
-SET @dateDebut = CURRENT_TIMESTAMP
+SET @dateDebut = CURRENT_TIMESTAMP +1
 Declare @dateFin DATE
 SET @dateFin = DATEADD(week, 10, CURRENT_TIMESTAMP)
+SELECT @dateDebut, @dateFin
 EXEC dbo.abonnement_creer
 	@DateDebut =  @dateDebut,
 	@DateFin = @dateFin,
@@ -71,6 +75,8 @@ EXEC dbo.abonnement_creer
 
 DECLARE @date_fin_loc DATETIME
 DECLARE @date_debut_res_1 DATETIME
+DECLARE @date_debut_res_2 DATETIME
+DECLARE @date_debut_res_3 DATETIME
 DECLARE @date_fin_res_1 DATETIME
 DECLARE @id_abonnement INT
 SELECT @id_abonnement = @@identity
@@ -78,7 +84,7 @@ SELECT @date_fin_loc = DATEADD(day, 2, CURRENT_TIMESTAMP)
 SELECT @date_debut_res_1 = DATEADD(day, 1, CURRENT_TIMESTAMP)
 SELECT @date_debut_res_2 = DATEADD(day, 5, CURRENT_TIMESTAMP)
 SELECT @date_debut_res_3 = DATEADD(day, 3, CURRENT_TIMESTAMP)
-SELECT @date_fin_res = DATEADD(day, 8, CURRENT_TIMESTAMP)
+SELECT @date_fin_res_1 = DATEADD(day, 8, CURRENT_TIMESTAMP)
 
 
 -- TODO : Montrer les tables avant
@@ -95,23 +101,38 @@ PRINT 'Test reservation impossible'
 EXEC dbo.reservation_ajouter
 	@id_abonnement = @id_abonnement,
 	@id_edition = @id_edition,
-	@date_debut = @date_debut_res_1
-	@date_fin = @date_fin_res
+	@date_debut = @date_debut_res_1,
+	@date_fin = @date_fin_res_1
 
 PRINT 'Test reservation possible'
 EXEC dbo.reservation_ajouter
 	@id_abonnement = @id_abonnement,
 	@id_edition = @id_edition,
-	@date_debut = @date_debut_res_2
-	@date_fin = @date_fin_res
+	@date_debut = @date_debut_res_2,
+	@date_fin = @date_fin_res_1
 
 PRINT 'Test reservation impossible 2'
 EXEC dbo.reservation_ajouter
 	@id_abonnement = @id_abonnement,
 	@id_edition = @id_edition,
-	@date_debut = @date_debut_res_3
-	@date_fin = @date_fin_res
+	@date_debut = @date_debut_res_3,
+	@date_fin = @date_fin_res_1
 
 -- TODO : Montrer les tables après
 PRINT 'Après execution'
 select * from Location
+
+/*
+DECLARE @date_debut DATETIME
+DECLARE @date_fin DATETIME
+SET @date_debut = '08/03/2013 18:08:26.250'
+SET @date_fin = '10/03/2013 18:08:26.250'
+
+select * from Edition
+select * from dbo.films_disponibles_le(15, @date_debut, @date_fin)
+
+SELECT * FROM Location loc
+        WHERE loc.FilmStockId = 16
+        AND ((@date_debut <= loc.DateRetourPrev AND @date_debut >= loc.DateLocation)
+			 OR
+             (@date_fin >= loc.DateLocation AND @date_fin <= loc.DateRetourPrev))*/

@@ -916,15 +916,15 @@ BEGIN
 			return 0;
 		END
 	
-	IF CHARINDEX('|',@liste_genres)=1
-		RAISERROR('Un film doit au moins avoir un genre', 128, 1);
+	IF CHARINDEX('|',@liste_genres)=0
+		RAISERROR('Un film doit au moins avoir un genre', 16, 1);
 	
 		
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp>= 1 /* film déjà au catalogue */
 	
-		RAISERROR('%s %d : film déjà au catalogue', 128, 1, @titre_VF, @annee_Sortie);
+		RAISERROR('%s %d : film déjà au catalogue', 16, 1, @titre_VF, @annee_Sortie);
 		
 	
 	ELSE /* film absent du catalogue, a inserer */
@@ -1297,7 +1297,7 @@ BEGIN
 	declare @tmp int
 	Select @tmp = count(*) from Personne Where Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers
 	IF @tmp=0
-		RAISERROR('%s %s : personne n''existe pas dans la tables personne', 128, 1, @nom_pers, @prenom_pers);
+		RAISERROR('%s %s : personne n''existe pas dans la tables personne', 16, 1, @nom_pers, @prenom_pers);
 		
 	Update Personne Set Personne.DateDeces=@date_deces Where  Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers  
 END 
@@ -1322,7 +1322,7 @@ BEGIN
 	declare @tmp int
 	Select @tmp = count(*) from Personne Where Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers
 	IF @tmp=0
-		RAISERROR('%s %s : personne n''existe pas dans la tables personne', 128, 1, @nom_pers, @prenom_pers);
+		RAISERROR('%s %s : personne n''existe pas dans la tables personne', 16, 1, @nom_pers, @prenom_pers);
 		
 	Update Personne Set Personne.Biographie=@bio_pers Where  Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers  
 END 
@@ -1347,7 +1347,7 @@ BEGIN
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0
-		RAISERROR('%s : personne n''existe pas dans la tables personne', 128, 1, @titre_VF);
+		RAISERROR('%s : personne n''existe pas dans la tables personne', 16, 1, @titre_VF);
 	
 	Update Film Set Film.SiteWeb=@site_web where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
@@ -1380,7 +1380,7 @@ BEGIN
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0
-		RAISERROR('%s : Film n''existe pas dans le catalogue', 128, 1, @titre_VF);
+		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 	IF @tmp=0--No, inserer la
@@ -1415,12 +1415,12 @@ Begin
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0--no, erreur
-		RAISERROR('%s : Film n''existe pas dans le catalogue', 128, 1, @titre_VF);
+		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
 		
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 	IF @tmp=0--No, erreur
-		RAISERROR('%s %s: La personne n''existe pas', 128, 1, @nom_act,@pre_act);
+		RAISERROR('%s %s: La personne n''existe pas', 16, 1, @nom_act,@pre_act);
 		
 	Delete FilmActeur where FilmActeur.Nom=@titre_VF AND FilmActeur.AnneeSortie=@annee_Sortie AND
 							FilmActeur.Nom=@nom_act AND FilmActeur.Prenom=@pre_act AND
@@ -1452,7 +1452,7 @@ Begin
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 								Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0
-		RAISERROR('%s : Film n''existe pas dans le catalogue', 128, 1, @titre_VF);
+		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_real And Prenom=@pre_real And Alias=@alias_real
 	IF @tmp=0--No, inserer la
@@ -1486,12 +1486,12 @@ Begin
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0--no, erreur
-		RAISERROR('%s : Film n''existe pas dans le catalogue', 128, 1, @titre_VF);
+		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
 		
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_real And Prenom=@pre_real And Alias=@alias_real
 	IF @tmp=0--No, erreur
-		RAISERROR('%s %s: La personne n''existe pas', 128, 1, @nom_real,@pre_real);
+		RAISERROR('%s %s: La personne n''existe pas', 16, 1, @nom_real,@pre_real);
 		
 	Delete FilmRealisateur where FilmRealisateur.Nom=@titre_VF AND FilmRealisateur.AnneeSortie=@annee_Sortie AND
 							FilmRealisateur.Nom=@nom_real AND FilmRealisateur.Prenom=@pre_real AND
@@ -1524,7 +1524,7 @@ Begin
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 								Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0
-		RAISERROR('%s : Film n''existe pas dans le catalogue', 128, 1, @titre_VF);
+		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_prod And Prenom=@pre_prod And Alias=@alias_prod
 	IF @tmp=0--No, inserer la
@@ -1558,12 +1558,12 @@ Begin
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0--no, erreur
-		RAISERROR('%s : Film n''existe pas dans le catalogue', 128, 1, @titre_VF);
+		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
 		
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_prod And Prenom=@pre_prod And Alias=@alias_prod
 	IF @tmp=0--No, erreur
-		RAISERROR('%s %s: La personne n''existe pas', 128, 1, @nom_prod,@pre_prod);
+		RAISERROR('%s %s: La personne n''existe pas', 16, 1, @nom_prod,@pre_prod);
 		
 	Delete FilmRealisateur where FilmRealisateur.Nom=@titre_VF AND FilmRealisateur.AnneeSortie=@annee_Sortie AND
 							FilmRealisateur.Nom=@nom_prod AND FilmRealisateur.Prenom=@pre_prod AND
@@ -1591,7 +1591,7 @@ Begin
 	--vérifié si le film existe
 	Select @tmp = count(*) from Film Where Film.TitreVF=@titre_VF And Film.AnneeSortie=@annee_film;
 	IF @tmp=0--No, erreur
-		RAISERROR('%s %d: Film n''existe pas dans le catalogue', 128, 1, @titre_VF,@annee_film);
+		RAISERROR('%s %d: Film n''existe pas dans le catalogue', 16, 1, @titre_VF,@annee_film);
 	
 	--vérifié si la distionction existe déjà
 	Select @tmp = count(*) from TypeDistinction Where TypeDistinction.Nom=@nom_dist;
@@ -1635,14 +1635,14 @@ Begin
 		Begin
 			Select @tmp = count(*) from Film Where Film.TitreVF=@titre_VF And Film.AnneeSortie=@annee_film;
 			IF @tmp=0--No, erreur
-				RAISERROR('%s %d: Film n''existe pas dans le catalogue', 128, 1, @titre_VF,@annee_film);
+				RAISERROR('%s %d: Film n''existe pas dans le catalogue', 16, 1, @titre_VF,@annee_film);
 		
 		END
 	
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_pers And Prenom=@pre_pers And Alias=@alias_pers
 	IF @tmp=0
-		RAISERROR('%s %s: Personne n''existe pas dans le catalogue', 128, 1,@nom_pers,@pre_pers);
+		RAISERROR('%s %s: Personne n''existe pas dans le catalogue', 16, 1,@nom_pers,@pre_pers);
 	--vérifié si la distionction existe déjà
 	Select @tmp = count(*) from TypeDistinction Where TypeDistinction.Nom=@nom_dist;
 	IF @tmp=0--No, inserer la
@@ -1930,14 +1930,15 @@ GO
 CREATE FUNCTION dbo.films_disponibles_le(@id_edition INT, @date_debut DATETIME, @date_fin DATETIME)
 RETURNS TABLE
 AS
-RETURN 
+RETURN
     SELECT * FROM V_FILMSTOCKS vfs
     WHERE vfs.IdEdition = @id_edition
     AND vfs.Id NOT IN (
         SELECT loc.FilmStockId FROM Location loc
-        WHERE loc.FilmStockId = Id
-        AND ((@date_debut <= loc.DateRetourPrev) OR
-             (@date_fin >= loc.DateLocation))
+        WHERE loc.FilmStockId = vfs.Id
+        AND ((@date_debut <= loc.DateRetourPrev AND @date_debut >= loc.DateLocation) 
+			 OR
+             (@date_fin >= loc.DateLocation AND @date_fin <= loc.DateRetourPrev))
     )
 GO
 
@@ -1994,10 +1995,15 @@ BEGIN
     DECLARE @age_client INT
     DECLARE @prix_loc SMALLMONEY
     
-
+	SET @id_filmstock = -1
     -- Récupère un id_filmstock disponible de l'édition
     SELECT TOP(1) @id_filmstock = Id
     FROM dbo.films_disponibles_le(@id_edition, @date_debut, @date_fin)
+    IF @id_filmstock = -1
+    BEGIN
+		RAISERROR('Pas d''exemplaire disponible pour cette édition et cette plage de temps !', 9, 1)
+		RETURN
+	END
             
     -- Récupère :
     -- le prix d'une location, 
@@ -2026,15 +2032,15 @@ BEGIN
     
     -- Si le client ne peut louer autant de jours
     IF @duree_loc > @duree_max_loc
-    BEGIN    	
-        RAISERROR('Le client ne peut louer autant de temps car son abonnement ne le permet pas', 16, 1)
+    BEGIN
+        RAISERROR('Le client ne peut louer autant de temps car son abonnement ne le permet pas', 9, 1)
+        RETURN
         PRINT('Nombre de jour max ' + CAST(@nb_max_jour_loc AS VARCHAR))
     END
     
     -- Si le client n'a pas l'âge requis
     ELSE IF @age_interdiction_film > @age_client
-        RAISERROR('Le client n''a pas l''age requis pour louer ce film', 16, 1)    
-    
+        RAISERROR('Le client n''a pas l''age requis pour louer ce film', 9, 1) 
     ELSE
     BEGIN                
         -- Créer la location
@@ -2086,7 +2092,7 @@ CREATE PROCEDURE dbo.location_ajouter (
 AS
 BEGIN
 	DECLARE @date_now DATETIME
-	SET @date_now = getdate()
+	SET @date_now = DATEADD(second, 1, CURRENT_TIMESTAMP)
     EXEC dbo._ajouter_location @id_abonnement, @id_edition, @date_now, @date_fin, 1
 END
 
