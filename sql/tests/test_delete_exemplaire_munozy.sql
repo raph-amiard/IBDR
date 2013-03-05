@@ -82,7 +82,7 @@ DECLARE @ID_EDITION INT
 SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
 
 EXEC dbo.filmstock_ajouter
-	@DateArrivee = '10/03/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
+	@DateArrivee = '01/04/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
 	@Usure  = 0,
 	@IdEdition = @ID_EDITION,
 	@Nombre = 1
@@ -137,8 +137,8 @@ INSERT INTO [IBDR_SAR].[dbo].[Abonnement]
            ,[TypeAbonnement])
      VALUES
            (1
-           ,convert(datetime,'2013-03-23 00:00:00.000',21)
-           ,convert(datetime,'2013-03-24 00:00:00.000',21)
+           ,convert(datetime,'2013-04-01 00:00:00.000',21)
+           ,convert(datetime,'2013-04-24 00:00:00.000',21)
            ,'Derrida'
            ,'Ambroise'
            ,'ambroise.derrida@cosmic.net'
@@ -161,9 +161,9 @@ INSERT INTO [IBDR_SAR].[dbo].[Location]
            )
      VALUES
            (@ID_ABONNEMENT
-           , '05/03/2013 10:00:00:000'
-           , '08/03/2013 10:00:00:000'
-           , '08/03/2013 10:00:00:000'
+           , '05/04/2013 10:00:00:000'
+           , '08/04/2013 10:00:00:000'
+           , '08/04/2013 10:00:00:000'
            ,@ID_FILMSTOCK,
            1)
            
@@ -175,7 +175,7 @@ INSERT INTO [IBDR_SAR].[dbo].[RelanceRetard]
            ,[LocationId]
            ,[Niveau])
      VALUES
-           ('07/03/2013 10:00:00:000'
+           ('07/04/2013 10:00:00:000'
            ,@ID_LOCATION
            ,2)
 GO

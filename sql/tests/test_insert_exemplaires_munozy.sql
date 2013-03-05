@@ -80,7 +80,7 @@ DECLARE @ID_EDITION INT
 SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
 
 EXEC dbo.filmstock_ajouter
-	@DateArrivee = '10/03/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
+	@DateArrivee = '01/04/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
 	@Usure  = 0,
 	@IdEdition = @ID_EDITION,
 	@Nombre = 3
