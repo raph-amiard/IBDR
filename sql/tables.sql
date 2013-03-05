@@ -107,7 +107,7 @@ CREATE TABLE Edition (
 	Support NVARCHAR(32) NOT NULL,
 	Couleur BIT NOT NULL,
 	Pays NVARCHAR(64) NOT NULL,
-	NomEdition NVARCHAR(256) NOT NULL,
+	NomEdition NVARCHAR(256) NOT NULL UNIQUE,
 	AgeInterdiction INT NOT NULL,
 
 	CONSTRAINT PK_EDITION PRIMARY KEY ( Id ),
@@ -135,7 +135,7 @@ CREATE TABLE FilmStock (
 
 	CONSTRAINT PK_FILMSTOCK PRIMARY KEY ( Id ),
 	CONSTRAINT FK_FILMSTOCK_EDITION
-		FOREIGN KEY ( IdEdition ) REFERENCES Edition ( Id )
+		FOREIGN KEY ( IdEdition ) REFERENCES Edition ( Id ) ON DELETE CASCADE
 )
 
 -------------------------------------
@@ -175,7 +175,7 @@ CREATE TABLE Genre (
 IF EXISTS  (SELECT 1 FROM sysobjects WHERE name = 'Client' AND xtype = 'U')  
 DROP TABLE Client ;
 CREATE TABLE Client (
-    Civilite          NVARCHAR(10) NOT NULL,
+    Civilite          NVARCHAR(24) NOT NULL,
 	Nom               NVARCHAR(64) NOT NULL,
 	Prenom            NVARCHAR(64) NOT NULL,
 	DateNaissance     DATE NOT NULL,
@@ -260,7 +260,7 @@ CREATE TABLE Location (
 
 	CONSTRAINT PK_LOCATION PRIMARY KEY ( Id ),
 	CONSTRAINT FK_LOCATION_FILMSTOCK
-		FOREIGN KEY ( FilmStockId ) REFERENCES FilmStock ( Id ),
+		FOREIGN KEY ( FilmStockId ) REFERENCES FilmStock ( Id ) ON DELETE CASCADE,
 	CONSTRAINT FK_LOCATION_ABONNEMENT
 		FOREIGN KEY ( AbonnementId ) 
 		REFERENCES Abonnement ( Id )
@@ -301,7 +301,7 @@ CREATE TABLE RelanceRetard (
 	CONSTRAINT PK_RELANCERETARD PRIMARY KEY ( LocationId ),
 	CONSTRAINT FK_RELANCERETARD_LOCATION
 		FOREIGN KEY ( LocationId )
-		REFERENCES Location ( Id )
+		REFERENCES Location ( Id ) ON DELETE CASCADE
 )
 
 -------------------------------------
@@ -448,7 +448,7 @@ CREATE TABLE EditionLangueSousTitres (
 	NomLangue  NVARCHAR(64) NOT NULL,
 
 	CONSTRAINT FK_SOUSTITRES_EDITION 
-		FOREIGN KEY ( IdEdition ) REFERENCES Edition ( Id ),
+		FOREIGN KEY ( IdEdition ) REFERENCES Edition ( Id ) ON DELETE CASCADE,
 	CONSTRAINT FK_SOUSTITRES_LANGUE 
 		FOREIGN KEY ( NomLangue ) REFERENCES Langue ( Nom )
 )
@@ -466,7 +466,7 @@ CREATE TABLE EditionLangueAudio (
 	NomLangue  NVARCHAR(64) NOT NULL,
 
 	CONSTRAINT FK_AUDIO_EDITION 
-		FOREIGN KEY ( IdEdition ) REFERENCES Edition ( Id ),
+		FOREIGN KEY ( IdEdition ) REFERENCES Edition ( Id ) ON DELETE CASCADE,
 	CONSTRAINT FK_AUDIO_LANGUE 
 		FOREIGN KEY ( NomLangue ) REFERENCES Langue ( Nom )
 )
@@ -486,7 +486,7 @@ CREATE TABLE EditeurEdition (
 	CONSTRAINT FK_EDITEUREDITION_EDITION
 		FOREIGN KEY ( IdEdition ) REFERENCES Edition ( Id ),
 	CONSTRAINT FK_EDITEUREDITION_EDITEUR
-		FOREIGN KEY ( NomEditeur ) REFERENCES Editeur ( Nom ),
+		FOREIGN KEY ( NomEditeur ) REFERENCES Editeur ( Nom ) ON UPDATE CASCADE
 )
 
 -------------------------------------
