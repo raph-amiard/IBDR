@@ -6,51 +6,18 @@
 ---------------------------------------------------------------------------------
 
 /** Supprimer données **/
-DELETE FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Edition]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Film] 
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Langue] 
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Pays] 
-GO
+EXEC _Vide_BD
 
 /** L'état de la base données par rapport les tables qui seront modifiés **/
 SELECT * FROM [IBDR_SAR].[dbo].[Edition]
-GO
-
 SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
 SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
 
 /** Ajouter données necessaires **/
 
-INSERT INTO [IBDR_SAR].[dbo].[Langue]
-           ([Nom])
-     VALUES
-           ('Portugue')
-GO
-
-INSERT INTO [IBDR_SAR].[dbo].[Langue]
-           ([Nom])
-     VALUES
-           ('Anglais')
-           
-INSERT INTO [IBDR_SAR].[dbo].[Langue]
-           ([Nom])
-     VALUES
-           ('Français')
+INSERT INTO [IBDR_SAR].[dbo].[Langue] ([Nom]) VALUES ('Portugue')
+INSERT INTO [IBDR_SAR].[dbo].[Langue] ([Nom]) VALUES ('Anglais')
+INSERT INTO [IBDR_SAR].[dbo].[Langue] ([Nom]) VALUES ('Français')
 
 INSERT INTO [IBDR_SAR].[dbo].[Film]
            ([TitreVF]
