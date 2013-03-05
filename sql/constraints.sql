@@ -34,7 +34,7 @@ ALTER TABLE [dbo].[Film]
 ADD 
 	CONSTRAINT chk_film_titrevo CHECK ([TitreVO] NOT LIKE '%[^A-Za-z ''-]%'),
 	CONSTRAINT chk_film_titrevf CHECK ([TitreVF] NOT LIKE '%[^A-Za-z ''-]%'),
-	CONSTRAINT chk_film_anneesortie CHECK (([AnneeSortie] >= '01/01/1800') AND ([AnneeSortie] < GETDATE())),
+	CONSTRAINT chk_film_anneesortie CHECK (([AnneeSortie] >= '1800') AND ([AnneeSortie] < DATEPART(yyyy,GETDATE()))),
 	CONSTRAINT chk_film_complementtitre CHECK ([ComplementTitre] NOT LIKE '%[^A-Za-z ''-]%'),
 	CONSTRAINT chk_film_siteweb CHECK ([SiteWeb] LIKE 'http://%')
 	-- CONSTRAINT chk_film_synopsis CHECK ([Synopsis] NOT LIKE '%[^A-Za-z '']%')
