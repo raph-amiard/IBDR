@@ -1718,7 +1718,7 @@ GO
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de création d'un client                 */
 /* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR                     */
+/* Testeur : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
 IF OBJECT_ID ('dbo.client_creer', 'P') IS NOT NULL 
     DROP PROCEDURE dbo.client_creer;
@@ -1786,7 +1786,7 @@ GO
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de création d'un client                 */
 /* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR                     */
+/* Testeur : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
 IF OBJECT_ID ('dbo.type_abonnement_creer', 'P') IS NOT NULL 
     DROP PROCEDURE dbo.type_abonnement_creer;
@@ -1830,7 +1830,7 @@ GO
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de creation d'un abonnement             */
 /* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR                     */
+/* Testeur : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
 IF OBJECT_ID ('dbo.abonnement_creer', 'P') IS NOT NULL 
     DROP PROCEDURE dbo.abonnement_creer;
@@ -1877,8 +1877,8 @@ GO
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de réapprovisionnement d'un compte      */
-/* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR                     */
+/* Auteur  : RAHMOUN Imane - SAR, GOUYOU Ludovic - TA*/
+/* Testeur : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
 IF OBJECT_ID ( 'dbo.compte_reapprovisioner', 'P' ) IS NOT NULL 
     DROP PROCEDURE dbo.compte_reapprovisioner;
@@ -1889,12 +1889,15 @@ CREATE PROCEDURE dbo.compte_reapprovisioner
 
 AS
 	BEGIN
-	IF EXISTS (SELECT * FROM dbo.Abonnemet WHERE dbo.Abonnement.Id = @Id) 
-		BEGIN 
-			UPDATE dbo.Abonnement 
-			SET dbo.Abonnement.solde += @AjoutSolde
-			WHERE id = @id
-		END
+	IF NOT EXISTS (SELECT * FROM Abonnement WHERE Id = @Id) 
+	BEGIN
+		DECLARE @mess VARCHAR(1000)
+		SET @mess = 'Abonnement ' + CONVERT (varchar, @Id) + ' inconnu'
+		RAISERROR (@mess, 17, 2)
+	END
+	UPDATE dbo.Abonnement 
+	SET dbo.Abonnement.solde += @AjoutSolde
+	WHERE id = @id
 END
 GO
 
