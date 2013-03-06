@@ -1958,11 +1958,25 @@ BEGIN
     DECLARE @id_compte INT, @id_client INT
     DECLARE @id_location INT
     
+    SET @id_location = -1
+    
+    SELECT @id_location = Id FROM Location
+    WHERE FilmStockId = @id_filmstock
+    AND DateRetourEff = NULL;
+    
+    IF @id_location = -1
+	BEGIN
+		RAISERROR('Pas de location correspondante', 10, 1);
+		RETURN
+	END
+
     -- Met à jour la location
     UPDATE Location
     SET DateRetourEff = GETDATE()
     WHERE FilmStockId = @id_filmstock
     AND DateRetourEff = NULL;
+    
+    PRINT 'Film rendu'
 END
 
 -------------------------------------------------------
@@ -2054,6 +2068,8 @@ BEGIN
                                 @date_fin,
                                 @id_filmstock,
                                 @confirmee)
+		PRINT 'Location ajoutée'
+		RETURN @id_filmstock
 	END
 END
 
@@ -2069,10 +2085,18 @@ GO
 CREATE PROCEDURE dbo.location_confirmer(@id_location INT)
 AS
 BEGIN
+	IF (SELECT COUNT(*) FROM Location WHERE Id = @id_location) < 1
+	BEGIN
+		RAISERROR('Pas de location correspondante', 10, 1)
+		RETURN
+	END
+	
     -- TODO : Ajouter check temps, impossible de confirmer réservation en dehors d'un intervalle défini
     UPDATE Location
     SET Confirmee = 1
     WHERE Id = @id_location
+    
+    PRINT 'Location confirmée'
 END
 
 -------------------------------------------------------
