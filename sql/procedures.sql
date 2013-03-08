@@ -36,7 +36,7 @@ BEGIN
     /** Vérifier s'il y a 'Editeur' **/
     IF CHARINDEX('|', @ListEditeurs) = 0
 	BEGIN
-		PRINT 'IL FAUT AJOUTER UN EDITEUR!'
+		RAISERROR('Il faut ajouter au moins un editeur pour ajouter une edition!', 9, 1);
 		SET @vide = 0
 	END
 	IF CHARINDEX('|',@ListEditeurs) <> 1
@@ -52,7 +52,7 @@ BEGIN
 	/** Vérifier s'il y a 'LangueAudio' **/
 	IF CHARINDEX('|', @ListEditeurs) = 0
 	BEGIN
-		PRINT 'IL FAUT AJOUTER UNE LANGUE AUDIO!'
+		RAISERROR('Il faut ajouter au moins une langue d''audio pour ajouter une edition!', 9, 1);
 		SET @vide = 0
 	END
 	IF CHARINDEX('|',@ListLangueAudio) <> 1
@@ -68,7 +68,7 @@ BEGIN
 	/** Vérifier s'il y a 'LangueSousTitres' **/
 	IF CHARINDEX('|', @ListLangueSousTitres) = 0
 	BEGIN
-		PRINT 'IL FAUT AJOUTER UNE LANGUE SOUS-TITRES!'
+		RAISERROR('Il faut ajouter au moins une langue de sous-titres pour ajouter une edition!', 9, 1);
 		SET @vide = 0
 	END
 	IF CHARINDEX('|',@ListLangueSousTitres) <> 1
@@ -90,16 +90,16 @@ BEGIN
 	--BEGIN TRAN ADD_EDITION
 		IF (@vide=1)
 		BEGIN 
-			INSERT INTO [IBDR_SAR].[dbo].[Edition]
-					   ([FilmTitreVF]
-					   ,[FilmAnneeSortie]
-					   ,[Duree]
-					   ,[DateSortie]
-					   ,[Support]
-					   ,[Couleur]
-					   ,[Pays]
-					   ,[NomEdition]
-					   ,[AgeInterdiction])
+			INSERT INTO Edition
+					   (FilmTitreVF
+					   ,FilmAnneeSortie
+					   ,Duree
+					   ,DateSortie
+					   ,Support
+					   ,Couleur
+					   ,Pays
+					   ,NomEdition
+					   ,AgeInterdiction)
 				 VALUES
 						(@FilmTitreVF,
 						convert(smallint,@FilmAnneeSortie),
@@ -117,11 +117,11 @@ BEGIN
 			IF (@ROWCOUNT = 1)
 			BEGIN
 				SET @ID_Edition = @@IDENTITY
-				PRINT 'EDITION AJOUTE!'
+				PRINT 'Edition "' + cast(@NomEdition AS NVARCHAR) +'" ajoutée!'
 			END
 			ELSE
 			BEGIN
-				PRINT 'EXISTE DEJA UNE EDITION AVEC CE NOM!'
+				RAISERROR('Existe déjà une edition avec ce nom!', 9, 1);
 			END
 		END
 		
@@ -137,21 +137,21 @@ BEGIN
 			SET @NomEditeur = LTRIM(SUBSTRING(@ListEditeurs , @index+1, @fin - @index-1))
 			
 			IF NOT EXISTS (SELECT *
-					FROM [IBDR_SAR].[dbo].[Editeur]
-					WHERE [Nom] = @NomEditeur)
+					FROM Editeur
+					WHERE Nom = @NomEditeur)
 			BEGIN
 
-				INSERT INTO [IBDR_SAR].[dbo].[Editeur]
-						   ([Nom])
+				INSERT INTO Editeur
+						   (Nom)
 					 VALUES
 						   (@NomEditeur)
 				
-				PRINT 'EDITEUR "' + cast(@NomEditeur AS NVARCHAR) +'" AJOUTE!'
+				PRINT 'Editeur "' + cast(@NomEditeur AS NVARCHAR) +'" ajouté!'
 			END
 
-			INSERT INTO [IBDR_SAR].[dbo].[EditeurEdition]
-					   ([IdEdition]
-					   ,[NomEditeur])
+			INSERT INTO EditeurEdition
+					   (IdEdition
+					   ,NomEditeur)
 				 VALUES
 					   (@ID_Edition
 					   ,@NomEditeur)
@@ -170,9 +170,9 @@ BEGIN
 			
 			SET @LangueAudio = LTRIM(SUBSTRING(@ListLangueAudio , @index+1, @fin - @index-1))
 	
-			INSERT INTO [IBDR_SAR].[dbo].[EditionLangueAudio]
-					   ([IdEdition]
-					   ,[NomLangue])
+			INSERT INTO EditionLangueAudio
+					   (IdEdition
+					   ,NomLangue)
 				 VALUES
 					   (@ID_Edition
 					   ,@LangueAudio)
@@ -193,9 +193,9 @@ BEGIN
 			
 			SET @LangueSousTitres = LTRIM(SUBSTRING(@ListLangueSousTitres , @index+1, @fin - @index-1))
 			
-			INSERT INTO [IBDR_SAR].[dbo].[EditionLangueSousTitres]
-				   ([IdEdition]
-				   ,[NomLangue])
+			INSERT INTO EditionLangueSousTitres
+				   (IdEdition
+				   ,NomLangue)
 			 VALUES
 				   (@ID_Edition
 				   ,@LangueSousTitres)
@@ -235,14 +235,14 @@ BEGIN
     * Vérifier le nombre d'exemplaires (FilmStock) et le nombre d'exemplaires loués
     **/
 	DECLARE @NombreFilmStock INT
-	SELECT @NombreFilmStock = COUNT(*) FROM [IBDR_SAR].[dbo].[FilmStock] WHERE [IdEdition] = @ID_Edition
+	SELECT @NombreFilmStock = COUNT(*) FROM FilmStock WHERE IdEdition = @ID_Edition
 	
 	DECLARE @NombreNonLocation INT
 	SET @NombreNonLocation = 0
 	
 	DECLARE @ID_FilmStock INT
 	DECLARE FilmStock CURSOR FOR
-		SELECT [ID] FROM [IBDR_SAR].[dbo].[FilmStock] WHERE [IdEdition] = @ID_Edition
+		SELECT ID FROM FilmStock WHERE IdEdition = @ID_Edition
 	OPEN FilmStock
 	FETCH NEXT FROM FilmStock
     	INTO @ID_FilmStock
@@ -250,8 +250,8 @@ BEGIN
     BEGIN
 		 		 
 		 IF NOT EXISTS (SELECT *
-            			FROM [IBDR_SAR].[dbo].[Location]
-                        WHERE [FilmStockId] = @ID_FilmStock AND [DateRetourEff] IS NULL )
+            			FROM Location
+                        WHERE FilmStockId = @ID_FilmStock AND DateRetourEff IS NULL )
 		BEGIN
 			SET @NombreNonLocation = @NombreNonLocation + 1
 		END
@@ -268,21 +268,21 @@ BEGIN
     BEGIN
 		DECLARE @NomEditeur NVARCHAR(64)
 		DECLARE Editeur CURSOR FOR
-			SELECT [NomEditeur] FROM [IBDR_SAR].[dbo].[EditeurEdition] WHERE [IdEdition] = @ID_Edition
+			SELECT NomEditeur FROM EditeurEdition WHERE IdEdition = @ID_Edition
 		OPEN Editeur
 		FETCH NEXT FROM Editeur
     		INTO @NomEditeur
 		WHILE @@FETCH_STATUS = 0
 		BEGIN
-			 DELETE FROM [IBDR_SAR].[dbo].[EditeurEdition] WHERE [IdEdition] = @ID_Edition AND [NomEditeur] = @NomEditeur
+			 DELETE FROM EditeurEdition WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
 			 
 			 IF NOT EXISTS (SELECT *
-            				FROM [IBDR_SAR].[dbo].[EditeurEdition]
-							WHERE [NomEditeur] = @NomEditeur)
+            				FROM EditeurEdition
+							WHERE NomEditeur = @NomEditeur)
 			BEGIN
-				DELETE FROM [IBDR_SAR].[dbo].[Editeur] WHERE [Nom] = @NomEditeur
+				DELETE FROM Editeur WHERE Nom = @NomEditeur
 				
-				PRINT 'EDITEUR "' + cast(@NomEditeur AS NVARCHAR) + '" SUPPRIME!'
+				PRINT 'Editeur "' + cast(@NomEditeur AS NVARCHAR) + '" supprimé!'
 			END
 			
 			FETCH NEXT FROM Editeur
@@ -291,12 +291,12 @@ BEGIN
 		CLOSE Editeur
 		DEALLOCATE Editeur
 	    
-		DELETE FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition
-		PRINT 'EDITION SUPPRIME!'
+		DELETE FROM Edition WHERE ID = @ID_Edition
+		PRINT 'Edition supprimée!'
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION NE PEUT PAS ETRE SUPPRIME, CAR IL Y A UN EXEMPLAIRE LOUE!'
+		RAISERROR('Edition ne peut pas être supprimée, car il y a un examplaire loué!', 10, 1);
 	END
 END    
 GO
@@ -317,26 +317,26 @@ AS
 BEGIN
 	DECLARE @ROWCOUNT INT
 	SET @ROWCOUNT = 0
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE [IBDR_SAR].[dbo].[Edition]
-		SET [NomEdition] = @NomEdition
-		WHERE [ID] = @ID_Edition
+		UPDATE Edition
+		SET NomEdition = @NomEdition
+		WHERE ID = @ID_Edition
 		
 		SET @ROWCOUNT = @@ROWCOUNT
 		
 		IF (@ROWCOUNT = 1)
 		BEGIN
-			PRINT 'MIS A JOUR!'
+			PRINT 'Mis à jour le nom!'
 		END
 		ELSE
 		BEGIN
-			PRINT 'EXISTE DEJA UNE EDITION AVEC CE NOM!'
+			RAISERROR('Existe déjà une edition avec ce nom!', 9, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -355,16 +355,16 @@ CREATE PROCEDURE dbo.edition_modifier_duree
 	@Duree NVARCHAR(9)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition]  WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition  WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE [IBDR_SAR].[dbo].[Edition]
-		SET [Duree] = @Duree
-		WHERE [ID] = @ID_Edition
-		PRINT 'MIS A JOUR!'
+		UPDATE Edition
+		SET Duree = @Duree
+		WHERE ID = @ID_Edition
+		PRINT 'Mis à jour la durée!'
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -383,16 +383,16 @@ CREATE PROCEDURE dbo.edition_modifier_date_sortie
 	@DateSortie NVARCHAR(11)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE [IBDR_SAR].[dbo].[Edition]
-		SET [DateSortie] = convert(date,@DateSortie,103)
-		WHERE [ID] = @ID_Edition
-		PRINT 'MIS A JOUR!'
+		UPDATE Edition
+		SET DateSortie = convert(date,@DateSortie,103)
+		WHERE ID = @ID_Edition
+		PRINT 'Mis à jour la date de sortie!'
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -411,16 +411,16 @@ CREATE PROCEDURE dbo.edition_modifier_support
 	@Support NVARCHAR(32)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition]  WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition  WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE [IBDR_SAR].[dbo].[Edition]
-		SET [Support] = @Support
-		WHERE [ID] = @ID_Edition
-		PRINT 'MIS A JOUR!'
+		UPDATE Edition
+		SET Support = @Support
+		WHERE ID = @ID_Edition
+		PRINT 'Mis à jour le support!'
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -439,16 +439,16 @@ CREATE PROCEDURE edition_modifier_couleur
 	@Couleur BIT
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE [IBDR_SAR].[dbo].[Edition]
-		SET [Couleur] = @Couleur
-		WHERE [ID] = @ID_Edition
-		PRINT 'MIS A JOUR!'
+		UPDATE Edition
+		SET Couleur = @Couleur
+		WHERE ID = @ID_Edition
+		PRINT 'Mis à jour la couleur!'
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -467,23 +467,23 @@ CREATE PROCEDURE dbo.edition_modifier_pays
 	@Pays NVARCHAR(64)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Pays] WHERE [Nom] = @Pays)
+		IF EXISTS (SELECT * FROM Pays WHERE Nom = @Pays)
 		BEGIN
-			UPDATE [IBDR_SAR].[dbo].[Edition]
-			SET [Pays] = @Pays
-			WHERE [ID] = @ID_Edition
-			PRINT 'MIS A JOUR!'
+			UPDATE Edition
+			SET Pays = @Pays
+			WHERE ID = @ID_Edition
+			PRINT 'Mis à jour le pays!'
 		END
 		ELSE
 		BEGIN
-			PRINT 'PAYS N''EXITE PAS!'
+			RAISERROR('Ce pays n''existe pas!', 9, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -502,16 +502,16 @@ CREATE PROCEDURE dbo.edition_modifier_age_interdiction
 	@AgeInterdiction INT
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE [IBDR_SAR].[dbo].[Edition]
-		SET [AgeInterdiction] = @AgeInterdiction
-		WHERE [ID] = @ID_Edition
-		PRINT 'MIS A JOUR!'
+		UPDATE Edition
+		SET AgeInterdiction = @AgeInterdiction
+		WHERE ID = @ID_Edition
+		PRINT 'Mis à jour l''age d''interdiction!'
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -530,26 +530,26 @@ CREATE PROCEDURE dbo.edition_ajouter_langue_audio
 	@LangueAudio NVARCHAR(64)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Langue] WHERE [Nom] = @LangueAudio)
+		IF EXISTS (SELECT * FROM Langue WHERE Nom = @LangueAudio)
 		BEGIN
-			INSERT INTO [IBDR_SAR].[dbo].[EditionLangueAudio]
-					   ([IdEdition]
-					   ,[NomLangue])
+			INSERT INTO EditionLangueAudio
+					   (IdEdition
+					   ,NomLangue)
 				 VALUES
 					   (@ID_Edition
 					   ,@LangueAudio)
-			PRINT 'MIS A JOUR!'
+			PRINT 'La langue d''audio a été ajoutée!'
 		END
 		ELSE
 		BEGIN
-			PRINT 'LANGUE N''EXITE PAS!'
+			RAISERROR('Cette langue n''existe pas!', 9, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -568,26 +568,26 @@ CREATE PROCEDURE dbo.edition_ajouter_langue_sous_titres
 	@LangueSousTitres NVARCHAR(64)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Langue] WHERE [Nom] = @LangueSousTitres)
+		IF EXISTS (SELECT * FROM Langue WHERE Nom = @LangueSousTitres)
 		BEGIN
-			INSERT INTO [IBDR_SAR].[dbo].[EditionLangueSousTitres]
-					   ([IdEdition]
-					   ,[NomLangue])
+			INSERT INTO EditionLangueSousTitres
+					   (IdEdition
+					   ,NomLangue)
 				 VALUES
 					   (@ID_Edition
 					   ,@LangueSousTitres)
-			PRINT 'MIS A JOUR!'
+			PRINT 'La langue de sous-titres a été ajoutée!'
 		END
 		ELSE
 		BEGIN
-			PRINT 'LANGUE N''EXITE PAS!'
+			RAISERROR('Cette langue n''existe pas!', 9, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -606,22 +606,22 @@ CREATE PROCEDURE dbo.edition_supprimer_langue_audio
 	@LangueAudio NVARCHAR(64)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Langue] WHERE [Nom] = @LangueAudio)
+		IF EXISTS (SELECT * FROM Langue WHERE Nom = @LangueAudio)
 		BEGIN
-			DELETE FROM [IBDR_SAR].[dbo].[EditionLangueAudio] 
-				WHERE [IdEdition] = @ID_Edition AND [NomLangue] = @LangueAudio
-			PRINT 'MIS A JOUR!'
+			DELETE FROM EditionLangueAudio 
+				WHERE IdEdition = @ID_Edition AND NomLangue = @LangueAudio
+			PRINT 'La langue de sous-titres a été supprimée!'
 		END
 		ELSE
 		BEGIN
-			PRINT 'LANGUE N''EXITE PAS!'
+			RAISERROR('Cette langue n''existe pas!', 9, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -640,22 +640,22 @@ CREATE PROCEDURE dbo.edition_supprimer_langue_sous_titres
 	@LangueSousTitres NVARCHAR(64)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Langue] WHERE [Nom] = @LangueSousTitres)
+		IF EXISTS (SELECT * FROM Langue WHERE Nom = @LangueSousTitres)
 		BEGIN
-			DELETE FROM [IBDR_SAR].[dbo].[EditionLangueSousTitres]
-				WHERE [IdEdition] = @ID_Edition AND [NomLangue] = @LangueSousTitres
-			PRINT 'MIS A JOUR!'
+			DELETE FROM EditionLangueSousTitres
+				WHERE IdEdition = @ID_Edition AND NomLangue = @LangueSousTitres
+			PRINT 'La langue de sous-titres a été supprimée!'
 		END
 		ELSE
 		BEGIN
-			PRINT 'LANGUE N''EXITE PAS!'
+			RAISERROR('Cette langue n''existe pas!', 9, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -674,31 +674,31 @@ CREATE PROCEDURE dbo.edition_supprimer_editeur
 	@NomEditeur NVARCHAR(64)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition]  WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 	
 		DECLARE @NombreEditeurs INT
-		SELECT @NombreEditeurs = COUNT(*) FROM [IBDR_SAR].[dbo].[EditeurEdition] WHERE [IdEdition] = @ID_Edition
+		SELECT @NombreEditeurs = COUNT(*) FROM EditeurEdition WHERE IdEdition = @ID_Edition
 		
 		IF (@NombreEditeurs > 1)
 		BEGIN
 			DECLARE @Editeur NVARCHAR(64)
 			DECLARE Editeur CURSOR FOR
-				SELECT [NomEditeur] FROM [IBDR_SAR].[dbo].[EditeurEdition] 
-									WHERE [IdEdition] = @ID_Edition AND [NomEditeur] = @NomEditeur
+				SELECT NomEditeur FROM EditeurEdition
+									WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
 			OPEN Editeur
 			FETCH NEXT FROM Editeur
     			INTO @Editeur
 			WHILE @@FETCH_STATUS = 0
 			BEGIN
-				 DELETE FROM [IBDR_SAR].[dbo].[EditeurEdition] WHERE [IdEdition] = @ID_Edition AND [NomEditeur] = @NomEditeur
+				 DELETE FROM EditeurEdition WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
 				 
 				 IF NOT EXISTS (SELECT *
-            					FROM [IBDR_SAR].[dbo].[EditeurEdition]
-								WHERE [NomEditeur] = @NomEditeur)
+            					FROM EditeurEdition
+								WHERE NomEditeur = @NomEditeur)
 				BEGIN
-					DELETE FROM [IBDR_SAR].[dbo].[Editeur] WHERE [Nom] = @NomEditeur
-					PRINT 'EDITEUR "' + cast(@NomEditeur AS NVARCHAR) +'" SUPPRIME!'
+					DELETE FROM Editeur WHERE Nom = @NomEditeur
+					PRINT 'L''editeur "' + cast(@NomEditeur AS NVARCHAR) +'" a été supprimé de la base données!'
 				END
 				
 				FETCH NEXT FROM Editeur
@@ -706,16 +706,16 @@ BEGIN
 			END
 			CLOSE Editeur
 			DEALLOCATE Editeur
-			PRINT 'MIS A JOUR!'
+			PRINT 'L''editeur a été supprimé de l''edition!'
 		END
 		ELSE
 		BEGIN
-			PRINT 'IMPOSSIBLE SUPPIRMER IL FAUT AU MOINS UN EDITEUR!'
+			RAISERROR('Impossible supprimer, car il faut moins un editeur!', 10, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -734,31 +734,31 @@ CREATE PROCEDURE dbo.edition_ajouter_editeur
 	@NomEditeur NVARCHAR(64)
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		IF NOT EXISTS (SELECT *
-        				FROM [IBDR_SAR].[dbo].[Editeur]
-						WHERE [Nom] = @NomEditeur)
+        				FROM Editeur
+						WHERE Nom = @NomEditeur)
 		BEGIN
 
-			INSERT INTO [IBDR_SAR].[dbo].[Editeur]
-					   ([Nom])
+			INSERT INTO Editeur
+					   (Nom)
 				 VALUES
 					   (@NomEditeur)
-			PRINT 'EDITEUR "' + cast(@NomEditeur AS NVARCHAR) +'" AJOUTE!'
+			PRINT 'L''editeur "' + cast(@NomEditeur AS NVARCHAR) +'" a été ajouté à la base données!'
 		END
 
-		INSERT INTO [IBDR_SAR].[dbo].[EditeurEdition]
-				   ([IdEdition]
-				   ,[NomEditeur])
+		INSERT INTO EditeurEdition
+				   (IdEdition
+				   ,NomEditeur)
 			 VALUES
 				   (@ID_Edition
 				   ,@NomEditeur)
-		PRINT 'MIS A JOUR!'
+		PRINT 'L''editeur a été ajouté à l''edition!'
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITION N''EXITE PAS!'
+		RAISERROR('Cette edition n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -780,27 +780,27 @@ BEGIN
 	DECLARE @ROWCOUNT INT
 	SET @ROWCOUNT = 0
 		
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Editeur] WHERE [Nom] = @NomEditeur)
+	IF EXISTS (SELECT * FROM Editeur WHERE Nom = @NomEditeur)
 	BEGIN
 					
-		UPDATE [IBDR_SAR].[dbo].[Editeur]
-		SET [Nom] = @NomEditeurNouv
-		WHERE [Nom] = @NomEditeur
+		UPDATE Editeur
+		SET Nom = @NomEditeurNouv
+		WHERE Nom = @NomEditeur
 		
 		SET @ROWCOUNT = @@ROWCOUNT
 		
 		IF (@ROWCOUNT = 1)
 		BEGIN 
-			PRINT 'MIS A JOUR!'
+			PRINT 'Mis à jour le nom!'
 		END
 		ELSE
 		BEGIN
-			PRINT 'EXISTE DEJA UN EDITEUR AVEC CE NOM!'
+		RAISERROR('Existe déjà un editeur avc ce nom!', 9, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		PRINT 'EDITEUR N''EXITE PAS!'
+		RAISERROR('Cet editeur n''existe pas!', 9, 1);
 	END
 END
 GO
@@ -822,21 +822,21 @@ CREATE PROCEDURE dbo.filmstock_ajouter
 
 AS
 BEGIN
-	IF EXISTS (SELECT * FROM [IBDR_SAR].[dbo].[Edition] WHERE [ID] = @IdEdition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @IdEdition)
 	BEGIN
 		WHILE @Nombre > 0
 		BEGIN
-			INSERT INTO [IBDR_SAR].[dbo].[FilmStock]
-					   ([DateArrivee]
-					   ,[Usure]
-					   ,[IdEdition])
+			INSERT INTO FilmStock
+					   (DateArrivee
+					   ,Usure
+					   ,IdEdition)
 				 VALUES
 					   (convert(datetime,@DateArrivee,103) 
 					   ,@Usure
 					   ,@IdEdition)
 		
 			SET @Nombre -= 1	
-			PRINT 'UN EXEMPLAIRE AJOUTE!'				  
+			PRINT 'Uun exemplaire a été ajouté!'				  
 		END				   
    END
 END
@@ -856,15 +856,15 @@ CREATE PROCEDURE filmstock_supprimer
 AS
 BEGIN
 	IF NOT EXISTS (SELECT *
-            			FROM [IBDR_SAR].[dbo].[Location]
-                        WHERE [FilmStockId] = @ID_FilmStock  AND [DateRetourEff] IS NULL)
+            			FROM Location
+                        WHERE FilmStockId = @ID_FilmStock  AND DateRetourEff IS NULL)
 		BEGIN
-			DELETE FROM [IBDR_SAR].[dbo].[FilmStock] WHERE [ID] = @ID_FilmStock
-			PRINT 'EXEMPLAIRE SUPPRIME!'
+			DELETE FROM FilmStock WHERE ID = @ID_FilmStock
+			PRINT 'Un exemplaire a été supprimé!'
 		END
 	ELSE
 		BEGIN
-			PRINT 'EXEMPLAIRE NE PEUT PAS ETRE SUPPRIME, CAR IL EST LOUE!'	
+			RAISERROR('l''exempliare ne peut pas être supprimer, car il est loué!', 10, 1);
 		END
 END
 GO
