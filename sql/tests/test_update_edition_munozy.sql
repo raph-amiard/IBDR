@@ -4,6 +4,10 @@
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
+
+USE IBDR_SAR
+GO
+
 /** Supprimer données **/
 DELETE FROM [IBDR_SAR].[dbo].[Location]
 GO

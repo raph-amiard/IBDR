@@ -5,6 +5,9 @@
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
 
+USE IBDR_SAR
+GO
+
 /** Supprimer données **/
 DELETE FROM [IBDR_SAR].[dbo].[Location]
 GO
@@ -147,8 +150,8 @@ INSERT INTO [IBDR_SAR].[dbo].[Abonnement]
            ,[TypeAbonnement])
      VALUES
            (1
-           ,'23/05/2013 00:00:00.000'
-           ,'24/05/2013 00:00:00.000'
+           ,convert(datetime,'2013-04-01 00:00:00.000',21)
+           ,convert(datetime,'2013-04-24 00:00:00.000',21)
            ,'Derrida'
            ,'Ambroise'
            ,'ambroise.derrida@cosmic.net'
