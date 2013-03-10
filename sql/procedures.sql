@@ -36,7 +36,7 @@ BEGIN
     /** Vérifier s'il y a 'Editeur' **/
     IF CHARINDEX('|', @ListEditeurs) = 0
 	BEGIN
-		RAISERROR('Il faut ajouter au moins un editeur pour ajouter une edition!', 9, 1);
+		RAISERROR('Il faut ajouter au moins un editeur pour ajouter une edition!', 11, 1);
 		SET @vide = 0
 		RETURN
 	END
@@ -53,7 +53,7 @@ BEGIN
 	/** Vérifier s'il y a 'LangueAudio' **/
 	IF CHARINDEX('|', @ListEditeurs) = 0
 	BEGIN
-		RAISERROR('Il faut ajouter au moins une langue d''audio pour ajouter une edition!', 9, 1);
+		RAISERROR('Il faut ajouter au moins une langue d''audio pour ajouter une edition!', 11, 1);
 		SET @vide = 0
 		RETURN
 	END
@@ -70,7 +70,7 @@ BEGIN
 	/** Vérifier s'il y a 'LangueSousTitres' **/
 	IF CHARINDEX('|', @ListLangueSousTitres) = 0
 	BEGIN
-		RAISERROR('Il faut ajouter au moins une langue de sous-titres pour ajouter une edition!', 9, 1);
+		RAISERROR('Il faut ajouter au moins une langue de sous-titres pour ajouter une edition!', 11, 1);
 		SET @vide = 0
 		RETURN
 	END
@@ -126,7 +126,7 @@ BEGIN
 			END
 			ELSE
 			BEGIN
-				RAISERROR('Existe déjà une edition avec ce nom!', 9, 1);
+				RAISERROR('Existe déjà une edition avec ce nom!', 11, 1);
 				RETURN
 			END
 		END
@@ -185,7 +185,7 @@ BEGIN
 						   ,@LangueAudio)
 			END TRY
 			BEGIN CATCH		
-				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 16, 1);
+				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 11, 1);
 				ROLLBACK TRAN ADD_EDITION
 				RETURN
 			END CATCH
@@ -214,7 +214,7 @@ BEGIN
 				
 			END TRY
 			BEGIN CATCH		
-				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 16, 1);
+				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 11, 1);
 				ROLLBACK TRAN ADD_EDITION
 				RETURN
 			END CATCH
@@ -306,7 +306,7 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Edition ne peut pas être supprimée, car il y a un examplaire loué!', 10, 1);
+		RAISERROR('Edition ne peut pas être supprimée, car il y a un examplaire loué!', 11, 1);
 	END
 END    
 GO
@@ -341,12 +341,12 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			RAISERROR('Existe déjà une edition avec ce nom!', 9, 1);
+			RAISERROR('Existe déjà une edition avec ce nom!', 11, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -374,7 +374,7 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -402,7 +402,7 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -430,7 +430,7 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -458,7 +458,7 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -488,12 +488,12 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			RAISERROR('Ce pays n''existe pas!', 9, 1);
+			RAISERROR('Ce pays n''existe pas!', 11, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -521,7 +521,7 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -554,12 +554,12 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			RAISERROR('Cette langue n''existe pas!', 9, 1);
+			RAISERROR('Cette langue n''existe pas!', 11, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -592,12 +592,12 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			RAISERROR('Cette langue n''existe pas!', 9, 1);
+			RAISERROR('Cette langue n''existe pas!', 11, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -626,12 +626,12 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			RAISERROR('Cette langue n''existe pas!', 9, 1);
+			RAISERROR('Cette langue n''existe pas!', 11, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -660,12 +660,12 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			RAISERROR('Cette langue n''existe pas!', 9, 1);
+			RAISERROR('Cette langue n''existe pas!', 11, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -720,12 +720,12 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			RAISERROR('Impossible supprimer, car il faut moins un editeur!', 10, 1);
+			RAISERROR('Impossible supprimer, car il faut moins un editeur!', 11, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -768,7 +768,7 @@ BEGIN
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cette edition n''existe pas!', 9, 1);
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -805,12 +805,12 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-		RAISERROR('Existe déjà un editeur avc ce nom!', 9, 1);
+		RAISERROR('Existe déjà un editeur avc ce nom!', 11, 1);
 		END
 	END
 	ELSE
 	BEGIN
-		RAISERROR('Cet editeur n''existe pas!', 9, 1);
+		RAISERROR('Cet editeur n''existe pas!', 11, 1);
 	END
 END
 GO
@@ -849,6 +849,10 @@ BEGIN
 			PRINT 'Uun exemplaire a été ajouté!'				  
 		END				   
    END
+   ELSE
+   BEGIN
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
+   END
 END
 GO
 
@@ -874,7 +878,7 @@ BEGIN
 		END
 	ELSE
 		BEGIN
-			RAISERROR('l''exempliare ne peut pas être supprimer, car il est loué!', 10, 1);
+			RAISERROR('l''exempliare ne peut pas être supprimer, car il est loué!', 11, 1);
 		END
 END
 GO
