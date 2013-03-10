@@ -627,7 +627,7 @@ BEGIN
 			END
 			ELSE
 			BEGIN
-				RAISERROR('La langue d''audio ne peut pas être supprimer, car il faut au moins en langue à l''edition!', 11, 1);
+				RAISERROR('La langue d''audio ne peut pas être supprimer, car il faut au moins une langue à l''edition!', 11, 1);
 			END
 		END
 		ELSE
