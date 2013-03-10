@@ -5,6 +5,8 @@ GO
 CREATE PROCEDURE [dbo].[niveau_relance_sur_retard]
 AS 
 BEGIN
+	DECLARE @max INT
+	SET @max = 5
 	DECLARE @id_location INT
 	DECLARE @dateRetourPrev DATETIME
 	DECLARE Retard CURSOR FOR
@@ -17,6 +19,7 @@ BEGIN
 	BEGIN
 		IF @dateRetourPrev < CURRENT_TIMESTAMP
 		BEGIN
+
 			IF NOT EXISTS (	
 				SELECT * FROM RelanceRetard 
 				WHERE LocationId = @id_location
@@ -27,9 +30,35 @@ BEGIN
 			END
 			ELSE
 			BEGIN
-				UPDATE RelanceRetard
-                SET Niveau += 1, Date = CURRENT_TIMESTAMP
-                WHERE LocationId = @id_location
+				IF EXISTS (
+					SELECT * from RelanceRetard 
+					WHERE LocationId = @id_location and Niveau >= @max
+				)
+				BEGIN
+					IF NOT EXISTS (SELECT * from Client as c 
+					inner join Abonnement as a 
+					on c.Nom = a.NomClient and c.Prenom = a.PrenomClient and c.Mail = a.MailClient
+					inner join Location as l 
+					on a.Id = l.AbonnementId
+					where c.BlackListe = 1 and l.Id = @id_location
+					)
+					BEGIN
+					UPDATE Client
+					SET BlackListe = 1
+					from Client as c
+					inner join Abonnement as a 
+					on c.Nom = a.NomClient and c.Prenom = a.PrenomClient and c.Mail = a.MailClient
+					inner join Location as l
+					on a.Id = l.AbonnementId
+					where l.Id = @id_location
+					END
+				END
+				ELSE
+				BEGIN
+					UPDATE RelanceRetard
+					SET Niveau += 1, Date = CURRENT_TIMESTAMP
+					WHERE LocationId = @id_location
+				END
 			END
 		END
 		FETCH NEXT FROM Retard
@@ -44,11 +73,13 @@ GO
 IF OBJECT_ID ( 'relance_sur_découvert', 'P' ) IS NOT NULL 
     DROP PROCEDURE relance_sur_découvert;
 GO
-CREATE PROCEDURE [dbo].[relance_sur_découvert] (
-	@MinSolde SMALLMONEY
-)
+CREATE PROCEDURE [dbo].[relance_sur_découvert]
 AS
 BEGIN
+	DECLARE @MinSolde SMALLMONEY
+	SET @MinSolde = 0
+	DECLARE @MaxRelance INT
+	SET @MaxRelance = 5
 	DECLARE @id_abonnement INT
 	DECLARE Decouvert CURSOR FOR
 		SELECT Id FROM Abonnement
@@ -68,9 +99,31 @@ BEGIN
 		END
 		ELSE
 		BEGIN
+			IF EXISTS (
+			SELECT * from RelanceDecouvert 
+			WHERE AbonnementId = @id_abonnement and Niveau >= @max
+		)
+		BEGIN
+			IF NOT EXISTS (SELECT * from Client as c 
+			inner join Abonnement as a 
+			on c.Nom = a.NomClient and c.Prenom = a.PrenomClient and c.Mail = a.MailClient
+			where c.BlackListe = 1 and a.Id = @id_abonnement
+			)
+			BEGIN
+			UPDATE Client
+			SET BlackListe = 1
+			from Client as c
+			inner join Abonnement as a 
+			on c.Nom = a.NomClient and c.Prenom = a.PrenomClient and c.Mail = a.MailClient
+			where a.Id = @id_abonnement
+			END
+		END
+		ELSE
+		BEGIN
 			UPDATE RelanceDecouvert
             SET Niveau += 1, Date = CURRENT_TIMESTAMP
             WHERE AbonnementId = @id_abonnement
+			END
 		END
 		FETCH NEXT FROM Decouvert
 			INTO @id_abonnement
