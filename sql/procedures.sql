@@ -88,7 +88,6 @@ BEGIN
 	DECLARE @ERROR_LANGUE INT
 	DECLARE @ROWCOUNT INT
 	SET @ROWCOUNT = 0
-	SET @ERROR_LANGUE = 0
 	
 	BEGIN TRAN ADD_EDITION
 		IF (@vide=1)
@@ -620,9 +619,16 @@ BEGIN
 	BEGIN
 		IF EXISTS (SELECT * FROM Langue WHERE Nom = @LangueAudio)
 		BEGIN
-			DELETE FROM EditionLangueAudio 
-				WHERE IdEdition = @ID_Edition AND NomLangue = @LangueAudio
-			PRINT 'La langue de sous-titres a été supprimée!'
+			IF ((SELECT COUNT(*) FROM EditionLangueAudio ) > 1)
+			BEGIN
+				DELETE FROM EditionLangueAudio 
+					WHERE IdEdition = @ID_Edition AND NomLangue = @LangueAudio
+				PRINT 'La langue d''audio a été supprimée!'
+			END
+			ELSE
+			BEGIN
+				RAISERROR('La langue d''audio ne peut pas être supprimer, car il faut au moins en langue à l''edition!', 11, 1);
+			END
 		END
 		ELSE
 		BEGIN
