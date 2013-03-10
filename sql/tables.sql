@@ -258,7 +258,6 @@ CREATE TABLE Location (
 	DateRetourEff     DATETIME,
 	FilmStockId       INT NOT NULL,
     Confirmee         BIT NOT NULL,
-    Supprimer		  BIT NOT NULL,
 
 	CONSTRAINT PK_LOCATION PRIMARY KEY ( Id ),
 	CONSTRAINT FK_LOCATION_FILMSTOCK
