@@ -38,6 +38,7 @@ BEGIN
 	BEGIN
 		RAISERROR('Il faut ajouter au moins un editeur pour ajouter une edition!', 9, 1);
 		SET @vide = 0
+		RETURN
 	END
 	IF CHARINDEX('|',@ListEditeurs) <> 1
 	BEGIN
@@ -54,6 +55,7 @@ BEGIN
 	BEGIN
 		RAISERROR('Il faut ajouter au moins une langue d''audio pour ajouter une edition!', 9, 1);
 		SET @vide = 0
+		RETURN
 	END
 	IF CHARINDEX('|',@ListLangueAudio) <> 1
 	BEGIN
@@ -70,6 +72,7 @@ BEGIN
 	BEGIN
 		RAISERROR('Il faut ajouter au moins une langue de sous-titres pour ajouter une edition!', 9, 1);
 		SET @vide = 0
+		RETURN
 	END
 	IF CHARINDEX('|',@ListLangueSousTitres) <> 1
 	BEGIN
@@ -87,7 +90,7 @@ BEGIN
 	SET @ROWCOUNT = 0
 	SET @ERROR_LANGUE = 0
 	
-	--BEGIN TRAN ADD_EDITION
+	BEGIN TRAN ADD_EDITION
 		IF (@vide=1)
 		BEGIN 
 			INSERT INTO Edition
@@ -99,7 +102,8 @@ BEGIN
 					   ,Couleur
 					   ,Pays
 					   ,NomEdition
-					   ,AgeInterdiction)
+					   ,AgeInterdiction
+					   , Supprimer)
 				 VALUES
 						(@FilmTitreVF,
 						convert(smallint,@FilmAnneeSortie),
@@ -109,7 +113,8 @@ BEGIN
 						@Couleur,
 						@Pays,
 						@NomEdition,
-						@AgeInterdiction)
+						@AgeInterdiction,
+						0)
 			
 			
 			SET @ROWCOUNT = @@ROWCOUNT
@@ -122,6 +127,7 @@ BEGIN
 			ELSE
 			BEGIN
 				RAISERROR('Existe déjà une edition avec ce nom!', 9, 1);
+				RETURN
 			END
 		END
 		
@@ -169,16 +175,21 @@ BEGIN
 			SET @fin = CHARINDEX('|', @ListLangueAudio, @index+1)
 			
 			SET @LangueAudio = LTRIM(SUBSTRING(@ListLangueAudio , @index+1, @fin - @index-1))
-	
-			INSERT INTO EditionLangueAudio
-					   (IdEdition
-					   ,NomLangue)
-				 VALUES
-					   (@ID_Edition
-					   ,@LangueAudio)
+			
+			BEGIN TRY 
+				INSERT INTO EditionLangueAudio
+						   (IdEdition
+						   ,NomLangue)
+					 VALUES
+						   (@ID_Edition
+						   ,@LangueAudio)
+			END TRY
+			BEGIN CATCH		
+				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 16, 1);
+				ROLLBACK TRAN ADD_EDITION
+				RETURN
+			END CATCH
 					   
-			SET @ERROR_LANGUE = @ERROR_LANGUE + @@ERROR
-						
 			SET @index = @fin
 			
 		END
@@ -193,27 +204,26 @@ BEGIN
 			
 			SET @LangueSousTitres = LTRIM(SUBSTRING(@ListLangueSousTitres , @index+1, @fin - @index-1))
 			
-			INSERT INTO EditionLangueSousTitres
-				   (IdEdition
-				   ,NomLangue)
-			 VALUES
-				   (@ID_Edition
-				   ,@LangueSousTitres)
-			SET @ERROR_LANGUE = @ERROR_LANGUE + @@ERROR
+			BEGIN TRY
+				INSERT INTO EditionLangueSousTitres
+					   (IdEdition
+					   ,NomLangue)
+				 VALUES
+					   (@ID_Edition
+					   ,@LangueSousTitres)
+				
+			END TRY
+			BEGIN CATCH		
+				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 16, 1);
+				ROLLBACK TRAN ADD_EDITION
+				RETURN
+			END CATCH
 			
 			SET @index = @fin
 			
 		END
-		
-	--IF (@ERROR_LANGUE = 0)
-	--BEGIN
-	--	COMMIT ADD_EDITION
-	--END
-	--ELSE
-	--BEGIN
-	--	ROLLBACK ADD_EDITION
-	--	PRINT 'L''OPERATION ANNULEE : UNE LANGUE N''EXISTE PAS !'
-	--END
+	
+	COMMIT TRAN ADD_EDITION
 END			
 GO
 
