@@ -16,16 +16,12 @@ SELECT e.NomEdition, ee.NomEditeur FROM Edition e inner join EditeurEdition ee O
 
 /** Ajouter données necessaires **/
 
---INSERT INTO [IBDR_SAR].[dbo].[Langue] ([Nom]) VALUES ('Portugais')
---INSERT INTO [IBDR_SAR].[dbo].[Langue] ([Nom]) VALUES ('Anglais')
---INSERT INTO [IBDR_SAR].[dbo].[Langue] ([Nom]) VALUES ('Français')
-
-INSERT INTO [IBDR_SAR].[dbo].[Film]
-           ([TitreVF]
-           ,[TitreVO]
-           ,[AnneeSortie]
-           ,[Langue]
-           ,[Synopsis])
+INSERT INTO Film
+           (TitreVF
+           ,TitreVO
+           ,AnneeSortie
+           ,Langue
+           ,Synopsis)
      VALUES
            ('Qu''il était bon mon petit français'
            ,'Como era gostoso o meu francês'
@@ -33,12 +29,6 @@ INSERT INTO [IBDR_SAR].[dbo].[Film]
            ,'Portugais'
            ,'À l’époque de l’épisode de la France Antarctique et dans le contexte des affrontements au xvi siècle entre Français et Portugais pour la colonisation du Brésil, le film raconte l’histoire d’un jeune Français recueilli par une tribu cannibale Tupinambas...')
 GO
-
---INSERT INTO [IBDR_SAR].[dbo].[Pays]
---           ([Nom])
---     VALUES
---           ('Brésil')
---GO
 
 /** Exécution de la procedure **/
 EXEC dbo.edition_creer 
@@ -56,11 +46,5 @@ EXEC dbo.edition_creer
 		@ListLangueSousTitres = '|Portugais|Français|Anglais|'
 		
 /** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[Edition]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
+SELECT ee.NomEditeur, e.NomEdition, e.FilmTitreVF, e.FilmAnneeSortie FROM Edition e inner join EditeurEdition ee ON e.Id = ee.IdEdition
 GO
