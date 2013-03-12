@@ -30,6 +30,54 @@ CREATE PROCEDURE dbo.edition_creer
 AS
 BEGIN
 
+	IF NOT EXISTS (SELECT *	FROM Film WHERE TitreVF = @FilmTitreVF AND AnneeSortie = @FilmAnneeSortie )
+	BEGIN
+		RAISERROR('Ce film n''existe pas dans la base donnée!', 11, 1);
+		RETURN
+	END
+	
+	IF @NomEdition = '' OR @NomEdition = ' '
+	BEGIN
+		RAISERROR('Le nom d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
+	IF EXISTS (SELECT * FROM Edition WHERE NomEdition = @NomEdition)
+	BEGIN
+		RAISERROR('Existe déjà une edition avec ce nom!', 11, 1);
+		RETURN
+	END
+	
+	IF @Duree = '' OR @Duree = ' '
+	BEGIN
+		RAISERROR('La duree d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
+	IF @DateSortie = '' OR @DateSortie = ' '
+	BEGIN
+		RAISERROR('La date de sortie d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
+	IF @Support = '' OR @Support = ' '
+	BEGIN
+		RAISERROR('Le support d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+
+	IF NOT EXISTS (SELECT *	FROM Pays WHERE Nom = @Pays )
+	BEGIN
+		RAISERROR('Ce pays n''existe pas dans la base donnée!', 11, 1);
+		RETURN
+	END
+	
+	IF @AgeInterdiction = '' OR @AgeInterdiction = ' '
+	BEGIN
+		RAISERROR('L''age d''interdiction d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
     DECLARE @vide INT
     SET @vide = 1
     
@@ -121,12 +169,6 @@ BEGIN
 			IF (@ROWCOUNT = 1)
 			BEGIN
 				SET @ID_Edition = @@IDENTITY
-				PRINT 'Edition "' + cast(@NomEdition AS NVARCHAR) +'" ajoutée!'
-			END
-			ELSE
-			BEGIN
-				RAISERROR('Existe déjà une edition avec ce nom!', 11, 1);
-				RETURN
 			END
 		END
 		
@@ -223,6 +265,7 @@ BEGIN
 		END
 	
 	COMMIT TRAN ADD_EDITION
+	PRINT 'Edition "' + cast(@NomEdition AS NVARCHAR) +'" ajoutée!'
 END			
 GO
 
