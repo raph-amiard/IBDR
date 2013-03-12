@@ -1,3 +1,6 @@
+Use IBDR_SAR
+GO
+
 DELETE FROM Langue;
 INSERT INTO dbo.Langue (Nom) VALUES 
 	(N'afrikaans'),	(N'albanais'),	(N'allemand'),	(N'amharic'),
@@ -79,5 +82,6 @@ INSERT INTO dbo.Pays (Nom) VALUES
 	(N'Ukraine'),	(N'Uruguay'),	(N'Vanuatu'),	(N'Venezuela'),
 	(N'Viêt Nam'),	(N'Yémen'),		(N'Yougoslavie'),(N'Zaïre'), (N'Zambie'),	(N'Zimbabwe');
 	
+DELETE FROM dbo.Genre;
 INSERT INTO dbo.Genre ( Nom ) VALUES
 	(N'Action'), (N'Aventure'), (N'Comédie'), (N'Drame'), (N'Documentaire');
