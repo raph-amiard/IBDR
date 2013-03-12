@@ -9,73 +9,21 @@ USE IBDR_SAR
 GO
 
 /** Supprimer données **/
-DELETE FROM [IBDR_SAR].[dbo].[Location]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Abonnement]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[TypeAbonnement]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Client]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[FilmStock]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Edition]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Film] 
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Langue] 
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Pays] 
-GO
+EXEC _Vide_BD
 
 /** Ajouter données necessaires **/
-
-INSERT INTO [IBDR_SAR].[dbo].[Langue]
-           ([Nom])
-     VALUES
-           ('Portugue')
-           
-INSERT INTO [IBDR_SAR].[dbo].[Langue]
-           ([Nom])
-     VALUES
-           ('Anglais')
-           
-INSERT INTO [IBDR_SAR].[dbo].[Langue]
-           ([Nom])
-     VALUES
-           ('Français')           
-
-INSERT INTO [IBDR_SAR].[dbo].[Film]
-           ([TitreVF]
-           ,[TitreVO]
-           ,[AnneeSortie]
-           ,[Langue]
-           ,[Synopsis])
+INSERT INTO Film
+           (TitreVF
+           ,TitreVO
+           ,AnneeSortie
+           ,Langue
+           ,Synopsis)
      VALUES
            ('Qu''il était bon mon petit français'
            ,'Como era gostoso o meu francês'
            ,convert(smallint,'1971')
-           ,'Portugue'
+           ,'Portugais'
            ,'À l’époque de l’épisode de la France Antarctique et dans le contexte des affrontements au xvi siècle entre Français et Portugais pour la colonisation du Brésil, le film raconte l’histoire d’un jeune Français recueilli par une tribu cannibale Tupinambas...')
-
-INSERT INTO [IBDR_SAR].[dbo].[Pays]
-           ([Nom])
-     VALUES
-           ('Brésil')
 
 EXEC dbo.edition_creer 
 		@FilmTitreVF = 'Qu''il était bon mon petit français',
@@ -88,11 +36,11 @@ EXEC dbo.edition_creer
 		@NomEdition = 'Box Edition',
 		@AgeInterdiction = 18,
 		@ListEditeurs = '|Globo Filmes|Condor Filmes|',
-		@ListLangueAudio = '|Portugue|Français|',
-		@ListLangueSousTitres = '|Portugue|Français|Anglais|'
+		@ListLangueAudio = '|Portugais|Français|',
+		@ListLangueSousTitres = '|Portugais|Français|Anglais|'
 		
 DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
+SELECT @ID_EDITION = ID FROM  Edition WHERE NomEdition = 'Box Edition'
 
 EXEC dbo.filmstock_ajouter
 	@DateArrivee = '01/04/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
@@ -100,31 +48,31 @@ EXEC dbo.filmstock_ajouter
 	@IdEdition = @ID_EDITION,
 	@Nombre = 1
 
-INSERT INTO [IBDR_SAR].[dbo].[TypeAbonnement]
-           ([Nom]
-           ,[PrixMensuel]
-           ,[PrixLocation]
-           ,[MaxJoursLocation]
-           ,[NbMaxLocations]
-           ,[PrixRetard]
-           ,[DureeEngagement])
+INSERT INTO TypeAbonnement
+           (Nom
+           ,PrixMensuel
+           ,PrixLocation
+           ,MaxJoursLocation
+           ,NbMaxLocations
+           ,PrixRetard
+           ,DureeEngagement, estdispo)
      VALUES
-           ('Solo',1,0.1,1,1,1,1)
+           ('Solo',1,0.1,1,1,1,1,1)
 
-INSERT INTO [IBDR_SAR].[dbo].[Client]
-           ([Civilite]
-           ,[Nom]
-           ,[Prenom]
-           ,[DateNaissance]
-           ,[Mail]
-           ,[Telephone1]
-           ,[Telephone2]
-           ,[NumRue]
-           ,[TypeRue]
-           ,[NomRue]
-           ,[CodePostal]
-           ,[Ville]
-           ,[BlackListe])
+INSERT INTO Client
+           (Civilite
+           ,Nom
+           ,Prenom
+           ,DateNaissance
+           ,Mail
+           ,Telephone1
+           ,Telephone2
+           ,NumRue
+           ,TypeRue
+           ,NomRue
+           ,CodePostal
+           ,Ville
+           ,BlackListe)
      VALUES
            ('Celib'
            ,'Derrida'
@@ -140,14 +88,14 @@ INSERT INTO [IBDR_SAR].[dbo].[Client]
            ,'Corte'
            ,0)
            
-INSERT INTO [IBDR_SAR].[dbo].[Abonnement]
-           ([Solde]
-           ,[DateDebut]
-           ,[DateFin]
-           ,[NomClient]
-           ,[PrenomClient]
-           ,[MailClient]
-           ,[TypeAbonnement])
+INSERT INTO Abonnement
+           (Solde
+           ,DateDebut
+           ,DateFin
+           ,NomClient
+           ,PrenomClient
+           ,MailClient
+           ,TypeAbonnement)
      VALUES
            (1
            ,convert(datetime,'2013-04-01 00:00:00.000',21)
@@ -162,15 +110,15 @@ DECLARE @ID_ABONNEMENT INT
 SELECT @ID_ABONNEMENT = @@IDENTITY 
 
 DECLARE @ID_FILMSTOCK INT
-SELECT @ID_FILMSTOCK = [ID] FROM  [IBDR_SAR].[dbo].[FilmStock]
+SELECT @ID_FILMSTOCK = ID FROM  FilmStock
 
-INSERT INTO [IBDR_SAR].[dbo].[Location]
-           ([AbonnementId]
-           ,[DateLocation]
-           ,[DateRetourPrev]
-           ,[DateRetourEff]
-           ,[FilmStockId]
-           ,[Confirmee])
+INSERT INTO Location
+           (AbonnementId
+           ,DateLocation
+           ,DateRetourPrev
+           ,DateRetourEff
+           ,FilmStockId
+           ,Confirmee)
      VALUES
            (@ID_ABONNEMENT
            , '05/04/2013 10:00:00:000'
@@ -182,57 +130,37 @@ INSERT INTO [IBDR_SAR].[dbo].[Location]
 DECLARE @ID_LOCATION INT
 SELECT @ID_LOCATION = @@IDENTITY
 
-INSERT INTO [IBDR_SAR].[dbo].[RelanceRetard]
-           ([Date]
-           ,[LocationId]
-           ,[Niveau])
+INSERT INTO RelanceRetard
+           (Date
+           ,LocationId
+           ,Niveau)
      VALUES
-           ('07/03/2013 10:00:00:000'
+           ('07/04/2013 10:00:00:000'
            ,@ID_LOCATION
            ,2)
 GO
 
 /** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[Edition]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
+SELECT ee.NomEditeur, e.NomEdition, fs.Id AS Exemplaire_ID, l.Id AS Location_ID, rr.Date AS RelanceRetard_Date
+	FROM Edition e, EditeurEdition ee, FilmStock fs, Location l, RelanceRetard rr 
+	WHERE  e.Id = ee.IdEdition AND fs.IdEdition = e.Id AND fs.Id = l.FilmStockId AND l.Id = rr.LocationId
 GO
 	
-SELECT * FROM [IBDR_SAR].[dbo].[Location]
-GO
+--SELECT * FROM Location
+--GO
 
-SELECT * FROM [IBDR_SAR].[dbo].[RelanceRetard]
-GO
+--SELECT * FROM RelanceRetard
+--GO
 
 /** Exécution de la procedure **/
 DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
+SELECT @ID_EDITION = ID FROM  Edition WHERE NomEdition = 'Box Edition'
 
 EXEC dbo.edition_supprimer
 	@ID_Edition = @ID_EDITION
 		
 /** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[Edition]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[Location]
-GO
-
-SELECT * FROM [IBDR_SAR].[dbo].[RelanceRetard]
+SELECT ee.NomEditeur, e.NomEdition, fs.Id AS Exemplaire_ID, l.Id AS Location_ID, rr.Date AS RelanceRetard_Date
+	FROM Edition e, EditeurEdition ee, FilmStock fs, Location l, RelanceRetard rr 
+	WHERE  e.Id = ee.IdEdition AND fs.IdEdition = e.Id AND fs.Id = l.FilmStockId AND l.Id = rr.LocationId
 GO
