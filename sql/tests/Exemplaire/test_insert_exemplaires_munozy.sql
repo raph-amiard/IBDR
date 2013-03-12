@@ -9,58 +9,25 @@ USE IBDR_SAR
 GO
 
 /** Supprimer données **/
-DELETE FROM [IBDR_SAR].[dbo].[FilmStock]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[EditeurEdition]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Edition]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Editeur]
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Film] 
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Langue] 
-GO
-
-DELETE FROM [IBDR_SAR].[dbo].[Pays] 
-GO
+EXEC _Vide_BD
 
 /** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
-GO
+SELECT * FROM FilmStock
 
 /** Ajouter données necessaires **/
 
-INSERT INTO [IBDR_SAR].[dbo].[Langue]
-           ([Nom])
-     VALUES
-           ('Portugue')
-GO
-
-INSERT INTO [IBDR_SAR].[dbo].[Film]
-           ([TitreVF]
-           ,[TitreVO]
-           ,[AnneeSortie]
-           ,[Langue]
-           ,[Synopsis])
+INSERT INTO Film
+           (TitreVF
+           ,TitreVO
+           ,AnneeSortie
+           ,Langue
+           ,Synopsis)
      VALUES
            ('Qu''il était bon mon petit français'
            ,'Como era gostoso o meu francês'
            ,convert(smallint,'1971')
-           ,'Portugue'
+           ,'Portugais'
            ,'À l’époque de l’épisode de la France Antarctique et dans le contexte des affrontements au xvi siècle entre Français et Portugais pour la colonisation du Brésil, le film raconte l’histoire d’un jeune Français recueilli par une tribu cannibale Tupinambas...')
-GO
-
-INSERT INTO [IBDR_SAR].[dbo].[Pays]
-           ([Nom])
-     VALUES
-           ('Brésil')
-GO
 
 EXEC dbo.edition_creer 
 		@FilmTitreVF = 'Qu''il était bon mon petit français',
@@ -73,14 +40,12 @@ EXEC dbo.edition_creer
 		@NomEdition = 'Box Edition',
 		@AgeInterdiction = 18,
 		@ListEditeurs = '|Globo Filmes|Condor Filmes|',
-		@ListLangueAudio = '|Portugue|',
-		@ListLangueSousTitres = '|Portugue|'
+		@ListLangueAudio = '|Portugais|',
+		@ListLangueSousTitres = '|Portugais|'
 
 /** Exécution de la procedure **/
-
 DECLARE @ID_EDITION INT
-
-SELECT @ID_EDITION = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
+SELECT @ID_EDITION = ID FROM  Edition WHERE NomEdition = 'Box Edition'
 
 EXEC dbo.filmstock_ajouter
 	@DateArrivee = '01/04/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
@@ -89,5 +54,5 @@ EXEC dbo.filmstock_ajouter
 	@Nombre = 3
 		
 /** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT * FROM [IBDR_SAR].[dbo].[FilmStock]
+SELECT * FROM FilmStock
 GO
