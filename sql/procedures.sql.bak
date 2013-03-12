@@ -1040,9 +1040,7 @@ BEGIN
 	declare @fin int
 	declare @vide int
 	declare @er int
-	DECLARE @TransactionMain varchar(20) = 'TransactionPrincipale';
 	
-
 	/* catalogue */
 	print '-- FIlM --'
 	IF CHARINDEX('|', @liste_acteurs)=0
@@ -1061,23 +1059,20 @@ BEGIN
 	
 		RAISERROR('%s %d : film déjà au catalogue', 16, 1, @titre_VF, @annee_Sortie);
 		
-BEGIN TRAN @TransactionMain		
-	 /* film absent du catalogue, a inserer */
+	
+	ELSE /* film absent du catalogue, a inserer */
 		BEGIN TRY
 			Print 'L''ajout du film '+ cast(@titre_VF as varchar)+ ' dans la tables Film';
 		
-			INSERT into Film(TitreVF,ComplementTitre,TitreVO,AnneeSortie,Synopsis,Langue,SiteWeb,isDeleted)
-					 VALUES ( @titre_VF, @complement_titre, @titre_VO, 
-								 @annee_Sortie, @synopsis, @langue, @site_web,0);
+			INSERT into Film VALUES ( @titre_VF, @complement_titre, @titre_VO, 
+								 @annee_Sortie, @synopsis, @langue, @site_web);
 			
 		END TRY
+		
 		BEGIN CATCH
-			--erreur
-			ROLLBACK TRAN @TransactionMain;
+			Print 'Erreur lors de l''insertion du film';
 			Print ERROR_MESSAGE();
-			RAISERROR('%s %d : Erreur lors de l''insertion du film :', 16, 1, @titre_VF, @annee_Sortie);
-			
-			return -1;
+			return 0;
 		END CATCH
 	
 	
@@ -1147,18 +1142,12 @@ BEGIN TRAN @TransactionMain
 				Print 'L''acteur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
 				Begin Try
 					
-						INSERT FilmActeur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
-							Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
+						INSERT FilmActeur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
 					
 				END Try
 				Begin Catch
-					
-					ROLLBACK TRAN @TransactionMain;
-					Print ERROR_MESSAGE();
-					RAISERROR('Erreur lors de l''ajouter de %s %s dans la tables FILMActeur : ', 16, 1, @nom_act, @pre_act);
-					return -1;
-					
-					Print ERROR_MESSAGE();
+					Print 'Erreur lors de l''ajouter de '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar)+' dans la tables FILMActeur';
+						Print ERROR_MESSAGE();
 				End Catch
 			End
 			ELSE /* l'acteur n'existe pas dans la table Acteurs, insérer dans la table Acteurs et dans la table Joue  */
@@ -1166,17 +1155,13 @@ BEGIN TRAN @TransactionMain
 					Print 'L''acteur '+cast(@nom_act as varchar)+' n''existe pas dans la table Personne, insérer dans la table Personne';				
 					Begin Try
 					
-							INSERT Personne (Nom,Prenom,Alias,DateNaissance,DateDeces,Biographie)
-								Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
-								
-							INSERT FilmActeur(TitreVF,AnneeSortie,Nom,Prenom,Alias)
-								 Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
+							INSERT Personne Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
+							INSERT FilmActeur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
 					
 					END Try
 					Begin Catch
-						ROLLBACK TRAN @TransactionMain;
+						Print 'Erreur lors de l''ajouter  de l''acteur : '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar);
 						Print ERROR_MESSAGE();
-						RAISERROR('Erreur lors de l''ajouter de %s %s dans la tables FilmActeur : ', 16, 1, @nom_act, @pre_act);
 					End Catch
 				
 				END
@@ -1238,36 +1223,30 @@ BEGIN TRAN @TransactionMain
 			Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 			IF @tmp = 1 -- elle éxiste 
 			Begin
-				Print 'Le réalisateur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
+				Print 'L''acteur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
 				Begin Try
 					
-						INSERT FilmRealisateur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
-							Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
+						INSERT FilmRealisateur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
 					
 				END Try
 				Begin Catch
-					ROLLBACK TRAN @TransactionMain;
-					Print ERROR_MESSAGE();
-					RAISERROR('Erreur lors de l''ajouter de "%s %s" dans la tables FilmRéalisateur : ', 16, 1, @nom_act,@pre_act);
+					Print 'Erreur lors de l''ajouter de '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar)+' dans la tables FilmRéalisateur';
 					
+					Print ERROR_MESSAGE();
 				End Catch
 			End
 			ELSE /* l'acteur n'existe pas dans la table Acteurs, insérer dans la table Acteurs et dans la table Joue  */
 				BEGIN
-					Print 'Le réalisateur '+cast(@nom_act as varchar)+' n''existe pas dans la table Personne, insérer dans la table Personne';				
+					Print 'L''acteur '+cast(@nom_act as varchar)+' n''existe pas dans la table Personne, insérer dans la table Personne';				
 					Begin Try
 						
-							INSERT Personne (Nom,Prenom,Alias,DateNaissance,DateDeces,Biographie)
-								Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
-								
-							INSERT FilmRealisateur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
-								Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
+							INSERT Personne Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
+							INSERT FilmRealisateur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
 						
 					END Try
 					Begin Catch
-						ROLLBACK TRAN @TransactionMain;
+						Print 'Erreur lors de l''ajouter de '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar);
 						Print ERROR_MESSAGE();
-						RAISERROR('Erreur lors de dans l''ajout de "%s %s" : ', 16, 1, @nom_act,@pre_act );
 					End Catch
 				
 				END
@@ -1335,38 +1314,29 @@ BEGIN TRAN @TransactionMain
 			Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 			IF @tmp = 1 -- elle éxiste 
 			Begin
-				Print 'Le producteur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
+				Print 'L''acteur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
 				Begin Try
-					
-						INSERT FilmActeur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
-							Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
-					
+					Begin Tran
+						INSERT FilmActeur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
+					Commit Tran
 				END Try
 				Begin Catch
-					ROLLBACK TRAN @TransactionMain;
-					Print ERROR_MESSAGE();
-					RAISERROR('Erreur lors dans l''ajouter de %s %s: ', 16, 1,@nom_act ,@pre_act );
-					
-					Print ERROR_MESSAGE();
-					
+					Print 'Erreur lors de l''ajouter de '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar)+' dans la tables FilmProducteur';
+						Print ERROR_MESSAGE();
 				End Catch
 			End
 			ELSE /* le producteur n'existe pas dans la table Producteurs, insérer dans la table Producteurs et dans la table Joue  */
 				BEGIN
 					Print 'Le producteur '+cast(@nom_act as varchar)+' n''existe pas dans la table Personne, insérer dans la table Personne';				
 					Begin Try
-						
-							INSERT Personne (Nom,Prenom,Alias,DateNaissance,DateDeces,Biographie)
-								Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
-								
-							INSERT FilmActeur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
-								Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
-						
+						Begin Tran
+							INSERT Personne Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
+							INSERT FilmActeur Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
+						Commit Tran
 					END Try
 					Begin Catch
-						ROLLBACK TRAN @TransactionMain;
+						Print 'Erreur lors de l''ajouter  du producteur : '+cast(@nom_act as varchar)+' '+cast(@pre_act as varchar)+' '+cast(@alias_act as varchar);
 						Print ERROR_MESSAGE();
-						RAISERROR('Erreur lors dans l''ajouter de %s %s: ', 16, 1,@nom_act ,@pre_act );
 					End Catch
 				
 				END
@@ -1410,40 +1380,33 @@ BEGIN TRAN @TransactionMain
 			Begin
 				--Print 'Le genre '+cast(@genre_film as varchar)+' existe déjà dans la table Genre';	
 				Begin Try
-						INSERT FilmGenre (TitreVF,AnneeSortie,NomGenre)
-							Values (@titre_VF,@annee_Sortie,@genre_film)
-					
+					Begin Tran
+						INSERT FilmGenre Values (@titre_VF,@annee_Sortie,@genre_film)
+					Commit Tran
 				END Try
 				Begin Catch
-					ROLLBACK TRAN @TransactionMain;
+					Print 'Erreur lors de le genre '+cast(@genre_film as varchar);
 					Print ERROR_MESSAGE();
-					RAISERROR('Erreur dans l''ajout du genre %s : ', 16, 1, @genre_film );
-					
 				End Catch
 			End
 			ELSE /* l'acteur n'existe pas dans la table Acteurs, insérer dans la table Acteurs et dans la table Joue  */
 				BEGIN
 					Print 'Le genre : '+cast(@genre_film as varchar)+' n''existe pas dans la table Genre';				
-					
+					Print 'Veuillez l''inserer avant.'
+					/*
 					Begin Try
-							INSERT Genre (Nom)
-								Values (@genre_film);
-								
-							INSERT FilmGenre (TitreVF,AnneeSortie,NomGenre)
-								Values (@titre_VF,@annee_Sortie,@genre_film);
-					
+						Begin Tran
+							INSERT Genre Values (@genre_film);
+							INSERT FilmGenre Values (@titre_VF,@annee_Sortie,@genre_film);
+						Commit Tran
 					END Try
 					Begin Catch
-						ROLLBACK TRAN @TransactionMain;
+						Print 'Erreur lors de le genre '+cast(@genre_film as varchar);
 						Print ERROR_MESSAGE();
-						RAISERROR('Erreur dans l''ajout du genre %s : ', 16, 1, @genre_film );
-						
 					End Catch
-					
+					*/
 				END
 		END
-		
-COMMIT TRAN @TransactionMain
 	
 end	
 GO
@@ -1467,7 +1430,7 @@ BEGIN
 	declare @tmp int
 	Select @tmp = count(*) from Personne Where Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers
 	IF @tmp=0
-		RAISERROR('%s %s : personne n''existe pas dans la table personne', 16, 1, @nom_pers, @prenom_pers);
+		RAISERROR('%s %s : personne n''existe pas dans la tables personne', 16, 1, @nom_pers, @prenom_pers);
 		
 	Update Personne Set Personne.DateDeces=@date_deces Where  Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers  
 END 
@@ -1517,7 +1480,7 @@ BEGIN
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0
-		RAISERROR('%s %d: film n''existe pas dans la tables Film', 16, 1, @titre_VF,@annee_Sortie);
+		RAISERROR('%s : personne n''existe pas dans la tables personne', 16, 1, @titre_VF);
 	
 	Update Film Set Film.SiteWeb=@site_web where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
@@ -1550,15 +1513,14 @@ BEGIN
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0
-		RAISERROR('%s %d: Film n''existe pas dans le catalogue', 16, 1, @titre_VF,@annee_Sortie);
+		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 	IF @tmp=0--No, inserer la
 		Insert Personne Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act)
 	
 	--créer le lien entre film et personne
-	Insert FilmActeur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
-			 values(@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
+	Insert FilmActeur values(@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
 	
 END	
 GO
@@ -1630,10 +1592,8 @@ Begin
 		Insert Personne Values (@nom_real,@pre_real,@alias_real,@dat_real,@dat_deces_real,@biographie_real)
 	
 	--créer le lien entre film et personne
-	Insert FilmRealisateur(TitreVF,AnneeSortie,Nom,Prenom,Alias)
-			 values(@titre_VF,@annee_Sortie,@nom_real,@pre_real,@alias_real);
+	Insert FilmRealisateur values(@titre_VF,@annee_Sortie,@nom_real,@pre_real,@alias_real);
 	
-	Print 'Le réalisateur '+@nom_real+' '+@pre_real+' est bien inséré pour '+@titre_VF+' '+@annee_Sortie;
 End
 GO
 
@@ -1666,11 +1626,9 @@ Begin
 	IF @tmp=0--No, erreur
 		RAISERROR('%s %s: La personne n''existe pas', 16, 1, @nom_real,@pre_real);
 		
-	Delete FilmRealisateur where FilmRealisateur.TitreVF=@titre_VF AND FilmRealisateur.AnneeSortie=@annee_Sortie AND
+	Delete FilmRealisateur where FilmRealisateur.Nom=@titre_VF AND FilmRealisateur.AnneeSortie=@annee_Sortie AND
 							FilmRealisateur.Nom=@nom_real AND FilmRealisateur.Prenom=@pre_real AND
 							FilmRealisateur.Alias=@alias_real;
-							
-	Print 'Le réalisateur '+@nom_real+' '+@pre_real+' est bien suprrimer de '+@titre_VF+' '+@annee_Sortie;
 END			
 GO
 
@@ -1706,10 +1664,8 @@ Begin
 		Insert Personne Values (@nom_prod,@pre_prod,@alias_prod,@dat_prod,@dat_deces_prod,@biographie_prod)
 	
 	--créer le lien entre film et personne
-	Insert FilmProducteur(TitreVF,AnneeSortie,NomProducteur,PrenomProducteur,AliasProducteur)
-			values(@titre_VF,@annee_Sortie,@nom_prod,@pre_prod,@alias_prod);
+	Insert FilmRealisateur values(@titre_VF,@annee_Sortie,@nom_prod,@pre_prod,@alias_prod);
 	
-	Print 'Le producteur '+@nom_prod+' '+@pre_prod+' est bien inséré pour '+@titre_VF+' '+@annee_Sortie;
 End
 GO
 
@@ -1742,13 +1698,9 @@ Begin
 	IF @tmp=0--No, erreur
 		RAISERROR('%s %s: La personne n''existe pas', 16, 1, @nom_prod,@pre_prod);
 		
-	Delete FilmProducteur where FilmProducteur.TitreVF=@titre_VF AND FilmProducteur.AnneeSortie=@annee_Sortie AND
-							FilmProducteur.NomProducteur=@nom_prod AND FilmProducteur.PrenomProducteur=@pre_prod AND
-							FilmProducteur.AliasProducteur=@alias_prod;
-							
-							
-	Print 'Le producteur '+@nom_prod+' '+@pre_prod+' est bien supprimé de '+@titre_VF+' '+@annee_Sortie;
-	
+	Delete FilmRealisateur where FilmRealisateur.Nom=@titre_VF AND FilmRealisateur.AnneeSortie=@annee_Sortie AND
+							FilmRealisateur.Nom=@nom_prod AND FilmRealisateur.Prenom=@pre_prod AND
+							FilmRealisateur.Alias=@alias_prod;
 END
 GO
 
@@ -1779,11 +1731,8 @@ Begin
 	IF @tmp=0--No, inserer la
 		Insert TypeDistinction Values (@nom_dist);
 	
-	Insert FilmDistinction (Annee,TitreVF,AnneeSortie,NomDistinction)
-			 Values(@annee_dist,@titre_VF,@annee_film,@nom_dist);
+	Insert FilmDistinction Values(@annee_dist,@titre_VF,@annee_film,@nom_dist);
 	
-	Print 'Le distinction '+@nom_dist+' est bien rajouté pour '+@titre_VF;
-		
 End
 
 GO
@@ -1833,63 +1782,11 @@ Begin
 		Insert TypeDistinction Values (@nom_dist);
 
 	--inserer la distionction	
-	Insert PersonneDistinction (Annee,TitreVF,AnneeSortie,NomDistinction,Nom,Prenom,Alias)
-			Values(@annee_dist,@titre_VF,@annee_film,@nom_dist,@nom_pers,@pre_pers,@alias_pers);
+	Insert PersonneDistinction Values(@annee_dist,@titre_VF,@annee_film,@nom_dist,@nom_pers,@pre_pers,@alias_pers);
 	
-	Print 'Le distinction '+@nom_dist+' est bien rajouté pour '+@titre_VF+' '+@annee_film;
 END
 GO
 
- -------------------------------------
-/* IBDR 2013 – Groupe SAR		  */
-/* Precedure du suppression des 
-   personnes non référenciés      */
-/* Auteur : AISSAT Mustapha - SAR */
-/* Testeur : AISSAT Mustapha      */
--------------------------------------
-IF OBJECT_ID ('Personne_nettoyage') IS NOT NULL
-    DROP PROCEDURE Personne_nettoyage
-GO
---procedure periodique pour supprimer les distinction plus référencé
-CREATE PROCEDURE [dbo].Personne_nettoyage
-AS
-Begin
-
-  DECLARE @nom_pers NVARCHAR(64);
-	DECLARE @prenom_pers NVARCHAR(64);
-	DECLARE @alias_pers NVARCHAR(64);
-	
-	DECLARE PersonneNonRef CURSOR FOR
-		Select Nom,Prenom,Alias
-			from (
-				Select p.Nom,p.Prenom,p.Alias, f.TitreVF as TitreFilm from Personne p Left Outer join FilmActeur f On p.Nom=f.Nom AND p.Prenom=f.Prenom AND p.Alias=f.Alias
-				union
-				Select p.Nom,p.Prenom,p.Alias, f.TitreVF as TitreFilm from Personne p Left Outer join FilmRealisateur f On p.Nom=f.Nom AND p.Prenom=f.Prenom AND p.Alias=f.Alias
-				union
-				Select p.Nom,p.Prenom,p.Alias, f.TitreVF as TitreFilm from Personne p Left Outer join FilmProducteur f On p.Nom=f.NomProducteur AND p.Prenom=f.PrenomProducteur AND p.Alias=f.AliasProducteur
-				)as a
-				
-			Group by Nom,Prenom,Alias
-			having count(TitreFilm)=0;
-
-	OPEN PersonneNonRef
-	FETCH NEXT FROM PersonneNonRef
-    	INTO @nom_pers,@prenom_pers,@alias_pers
-    --itérer  sur la list des personnes non référenciés
-    WHILE @@FETCH_STATUS = 0
-    BEGIN
-		Print 'suppression de : '+@nom_pers+' '+@prenom_pers;
-		DELETE FROM Personne WHERE Personne.Nom=@nom_pers and Personne.Prenom=@prenom_pers and Personne.Alias=@alias_pers;
-		
-		FETCH NEXT FROM PersonneNonRef
-    		INTO @nom_pers,@prenom_pers,@alias_pers
-    END
-    CLOSE PersonneNonRef
-    DEALLOCATE PersonneNonRef
-    
-END
-GO
-	
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de suppression d'un film                */
@@ -1906,99 +1803,55 @@ CREATE PROCEDURE dbo.film_supprimer
 AS
 Begin	
 	declare @tmp int
-	DECLARE @TransactionMain varchar(20) = 'TransactionPrincipale';
-	declare @deleteFilm bit=1;
-
-
-
 	--vérifié si le film existe
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0 /* film déjà au catalogue */
 		begin
 			print cast(@titre_VF as varchar)+', '+cast(@annee_Sortie as varchar)+' film n''est pas dans le catalogue';
-			
 			return 0;
 		end
 		
-BEGIN TRAN @TransactionMain	
-	Begin Try	
-		--indiquer que le film est supprimer
-		Update Film set IsDeleted=1 Where Film.TitreVF=@titre_VF AND 
-					Film.AnneeSortie=@annee_Sortie;
-					
-		
-		--supprimer les éditions
-		
-		
-		DECLARE @id_edition INT;
+	--verifié qu'il n'y a pas d'edition lié à ce film
+	Select @tmp=count(*) From Edition where Edition.FilmTitreVF=@titre_VF AND 
+				Edition.FilmTitreVF=@annee_Sortie;
+	IF @tmp>0 /* il y a au moins un film relié à edition */
+		begin
+			Print 'Impossible de supprimer  film :'+cast(@titre_VF as varchar)+', '+cast(@annee_Sortie as varchar);
+			print 'Film en relation avec Edition. Supprimer tous ces edition avant de le suprimer!';
+			return 0;
+		end
+	--On supprime en cascade le film
 	
-		DECLARE EdtionToDelete CURSOR FOR
-			Select id From dbo.Edition where Edition.FilmTitreVF=@titre_VF AND 
-					Edition.FilmTitreVF=@annee_Sortie;
-				
-
-		OPEN EdtionToDelete
-		FETCH NEXT FROM EdtionToDelete
-    		INTO @id_edition
-		--itérer  sur la list des personnes non référenciés
-		WHILE @@FETCH_STATUS = 0
-		BEGIN
-			--Print 'suppression de N°: '+cast(@id_edition as varchar);
-			Exec IBDR_SAR.dbo.edition_supprimer @id_edition;
-			
-			FETCH NEXT FROM EdtionToDelete
-    			INTO @id_edition
-		END
-		CLOSE EdtionToDelete
-		DEALLOCATE EdtionToDelete		
-				
-				--//TODO		
-			
-		--On supprime en cascade le film
-		
 		Begin
 			print 'Suppréssion du film :'+cast(@titre_VF as varchar)+', '+cast(@annee_Sortie as varchar)+' des tables FilmActeur,FilmRéalisateur,FilmGenre,FilmProducteur, FilmDistinction';
-			
-				
-			Delete FilmActeur Where FilmActeur.TitreVF=@titre_VF and FilmActeur.AnneeSortie=@annee_Sortie;
-			Delete FilmDistinction Where FilmDistinction.TitreVF=@titre_VF and FilmDistinction.AnneeSortie=@annee_Sortie;
-			Delete FilmGenre Where FilmGenre.TitreVF=@titre_VF and FilmGenre.AnneeSortie=@annee_Sortie;
-			Delete FilmProducteur Where FilmProducteur.TitreVF=@titre_VF and FilmProducteur.AnneeSortie=@annee_Sortie;
-			Delete FilmRealisateur Where FilmRealisateur.TitreVF=@titre_VF and FilmRealisateur.AnneeSortie=@annee_Sortie;
-			Delete PersonneDistinction Where PersonneDistinction.TitreVF=@titre_VF and PersonneDistinction.AnneeSortie=@annee_Sortie;
-			exec dbo.Personne_nettoyage ;
-			
-			--verifié qu'il n'y a pas d'edition lié à ce film
-			Select @tmp=count(*) From Edition where Edition.FilmTitreVF=@titre_VF AND 
-					Edition.FilmTitreVF=@annee_Sortie;
+			Begin Try
+				Begin Tran
+					Delete FilmActeur Where FilmActeur.TitreVF=@titre_VF and FilmActeur.AnneeSortie=@annee_Sortie;
+					Delete FilmDistinction Where FilmDistinction.TitreVF=@titre_VF and FilmDistinction.AnneeSortie=@annee_Sortie;
+					Delete FilmGenre Where FilmGenre.TitreVF=@titre_VF and FilmGenre.AnneeSortie=@annee_Sortie;
+					Delete FilmProducteur Where FilmProducteur.TitreVF=@titre_VF and FilmProducteur.AnneeSortie=@annee_Sortie;
+					Delete FilmRealisateur Where FilmRealisateur.TitreVF=@titre_VF and FilmRealisateur.AnneeSortie=@annee_Sortie;
+					Delete PersonneDistinction Where PersonneDistinction.TitreVF=@titre_VF and PersonneDistinction.AnneeSortie=@annee_Sortie;
+					Delete Film Where Film.TitreVF=@titre_VF and Film.AnneeSortie=@annee_Sortie;
 					
-			IF @tmp>0
-				Delete Film Where Film.TitreVF=@titre_VF and Film.AnneeSortie=@annee_Sortie;
-					
-		End	
+				Commit Tran
+			End Try
+			Begin Catch
+				Print 'Erreur lors de la suppréssion du film :'+cast(@titre_VF as varchar)+', '+cast(@annee_Sortie as varchar);
+			End Catch
 			
-	End Try
-	Begin Catch
-		ROLLBACK TRAN @TransactionMain;
-		Print ERROR_MESSAGE();
-		RAISERROR('Erreur lors de la suppréssion du film %s %d : ', 16, 1,@titre_VF ,@annee_Sortie );
+			
+		End
 		
-	End Catch
-		
-		
-	
-
-Commit TRAN @TransactionMain		
 END
 GO
-
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de création d'un client                 */
 /* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane , GOUYOU Ludovic - TA     */
+/* Testeur : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
 IF OBJECT_ID ('dbo.client_creer', 'P') IS NOT NULL 
     DROP PROCEDURE dbo.client_creer;
@@ -2013,8 +1866,8 @@ CREATE PROCEDURE dbo.client_creer
 	@Mail              NVARCHAR(128),
 	@Telephone1        NVARCHAR(20),
 	@Telephone2        NVARCHAR(20),	
-	@NumRue		       INT,
-	@TypeRue	       NVARCHAR(64),
+	@NumRue		   INT,
+	@TypeRue	   NVARCHAR(64),
 	@NomRue            NVARCHAR(128),
 	@ComplementAdresse NVARCHAR(256),
 	@CodePostal        NVARCHAR(10),
@@ -2022,184 +1875,41 @@ CREATE PROCEDURE dbo.client_creer
 )
 AS
 BEGIN
-	IF @Civilite IS NULL
-	BEGIN
-		RAISERROR('La civilite ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @Nom IS NULL
-	BEGIN
-		RAISERROR(' Le nom ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @Prenom IS NULL
-	BEGIN
-		RAISERROR(' Le prenom ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @DateNaissance IS NULL
-	BEGIN
-		RAISERROR(' La DateNaissance ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @Mail IS NULL
-	BEGIN
-		RAISERROR(' Mail ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @Telephone1 IS NULL
-	BEGIN
-		RAISERROR(' Le numero de téléphone  ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @NumRue IS NULL
-	BEGIN
-		RAISERROR(' Le numero de la rue  ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @TypeRue IS NULL
-	BEGIN
-		RAISERROR(' Le type de la rue ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @NomRue IS NULL
-	BEGIN
-		RAISERROR(' Le nom de la rue ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @CodePostal IS NULL
-	BEGIN
-		RAISERROR(' Le code postal ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @Ville IS NULL
-	BEGIN
-		RAISERROR(' Le nom de la ville ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @Nom LIKE '%[^A-Za-z ''-]%'
-	BEGIN
-		RAISERROR(' Nom non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @Prenom LIKE '%[^A-Za-z ''-]%'
-	BEGIN
-		RAISERROR(' Prenom non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @DateNaissance < '01/01/1900'
-	BEGIN
-		RAISERROR(' Date de	Naissance non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @Civilite LIKE '%[^A-Za-z ''-]%'
-	BEGIN
-		RAISERROR(' Civilité non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @NomRue LIKE '%[^A-Za-z ''-]%'
-	BEGIN
-		RAISERROR(' Nom de rue non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @NumRue <= 0
-	BEGIN
-		RAISERROR(' Numero de rue  non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @TypeRue  NOT IN ('Rue', 'Avenue', 'Passage', 'Impasse', 'Route')
-	BEGIN
-		RAISERROR(' Type de rue non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @CodePostal NOT LIKE '[0-9][A-Ba-b0-9][0-9][0-9][0-9]'
-	BEGIN
-		RAISERROR(' Code postal non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @Ville  LIKE '%[^A-Za-z ''-]%'
-	BEGIN
-		RAISERROR('ville non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @Telephone1 NOT LIKE '0'+replicate('[0-9]',9)
-	BEGIN
-		RAISERROR('ville non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @Telephone2 NOT LIKE '0'+replicate('[0-9]',9)
-	BEGIN
-		RAISERROR('ville non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF  EXISTS (SELECT *
-		FROM Client
-		WHERE Nom=@NOM  and  Prenom=@Prenom  and  Mail=@Mail)
-	BEGIN
-		RAISERROR('Ce client existe deja', 9, 1);
-	END
-	ELSE
-	BEGIN										
-		-- Insère le client
-		INSERT 	INTO CLIENT
-					   (
-				Civilite     ,        
-				Nom        ,      
-				Prenom       ,      
-				DateNaissance,     
-				Mail          ,    
-				Telephone1     ,   
-				Telephone2      , 	
-				NumRue		,	
-				TypeRue		,	
-				NomRue           , 
-				ComplementAdresse ,
-				CodePostal       ,
-				Ville             ,
-				BlackListe 
-				)
+	-- Insère le client
+	INSERT 	INTO CLIENT
+                   (
+			Civilite  ,        
+			Nom        ,      
+			Prenom      ,      
+			DateNaissance,     
+			Mail          ,    
+			Telephone1     ,   
+			Telephone2      , 	
+			NumRue		,	
+			TypeRue		,	
+			NomRue           , 
+			ComplementAdresse ,
+			CodePostal       ,
+			Ville             ,
+			BlackListe 
+		    )
 
-				VALUES (	
-				@Civilite          ,
-				@Nom              ,
-				@Prenom            ,
-				@DateNaissance     ,
-				@Mail              ,
-				@Telephone1        ,
-				@Telephone2       ,	
-				@NumRue		,	
-				@TypeRue	,		
-				@NomRue          ,  
-				@ComplementAdresse, 
-				@CodePostal       ,
-				@Ville             ,
-				0       
-				  )
-				  
-		PRINT 'Client bien ajouté'
-	END
+            VALUES (	
+			@Civilite          ,
+			@Nom              ,
+			@Prenom            ,
+			@DateNaissance     ,
+			@Mail              ,
+			@Telephone1        ,
+			@Telephone2       ,	
+			@NumRue		,	
+			@TypeRue	,		
+			@NomRue          ,  
+			@ComplementAdresse, 
+			@CodePostal       ,
+			@Ville             ,
+			0       
+			  )
 END
 
 GO
@@ -2207,7 +1917,7 @@ GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
-/* Procedure de création d'un type d'abonnement                 */
+/* Procedure de création d'un client                 */
 /* Auteur  : RAHMOUN Imane - SAR                     */
 /* Testeur : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
@@ -2226,121 +1936,26 @@ CREATE PROCEDURE dbo.type_abonnement_creer
 )
 AS
 BEGIN
+	-- Insère Type Abonnement
+	INSERT INTO TypeAbonnement
+                   (
+			Nom, 
+			PrixLocation,
+			PrixMensuel,  
+			MaxJoursLocation, 
+			NbMaxLocations,
+			PrixRetard,  
+			DureeEngagement) 
 
-	IF @Nom IS NULL
-	BEGIN
-		RAISERROR(' Le nom  ne doit pas être null', 9, 1);
-		RETURN;
-	END	
-	IF @PrixMensuel IS NULL
-	BEGIN
-		RAISERROR(' le prix mensuel ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @PrixLocation IS NULL
-	BEGIN
-		RAISERROR(' le prix location ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @MaxJoursLocation IS NULL
-	BEGIN
-		RAISERROR(' le nombre de jour de location ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @NbMaxLocations IS NULL
-	BEGIN
-		RAISERROR(' Nombe de location ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @PrixRetard IS NULL
-	BEGIN
-		RAISERROR(' le prix du retard ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @DureeEngagement IS NULL
-	BEGIN
-		RAISERROR(' La duree d''engagement  ne doit pas être null', 9, 1);
-		RETURN;
-	END
-	
-	IF @Nom LIKE '%[^A-Za-z ''-]%'
-	BEGIN
-		RAISERROR(' Le nom  non valide', 9, 1);
-		RETURN;
-	END	
-	IF @PrixMensuel <= 0
-	BEGIN
-		RAISERROR(' le prix mensuel non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @PrixLocation <= 0
-	BEGIN
-		RAISERROR(' le prix location non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @MaxJoursLocation <= 0
-	BEGIN
-		RAISERROR(' le nombre de jour de location non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @NbMaxLocations <= 0
-	BEGIN
-		RAISERROR(' Nombre de location non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @PrixRetard < 0
-	BEGIN
-		RAISERROR(' le prix du retard non valide', 9, 1);
-		RETURN;
-	END
-	
-	IF @DureeEngagement < 0
-	BEGIN
-		RAISERROR(' La duree d''engagement  non valide', 9, 1);
-		RETURN;
-	END
-	
-
-	IF  NOT EXISTS (SELECT *
-		FROM TypeAbonnement
-		WHERE Nom=@Nom)
-	BEGIN
-		-- Insère Type Abonnement
-		 INSERT INTO TypeAbonnement
-					   (
-				Nom, 
-				PrixLocation,
-				PrixMensuel,  
-				MaxJoursLocation, 
-				NbMaxLocations,
-				PrixRetard,  
-				DureeEngagement,
-				estdispo) 
-
-				VALUES (	  
-				@Nom, 
-				@PrixLocation,
-				@PrixMensuel, 
-				@MaxJoursLocation, 
-				@NbMaxLocations,
-				@PrixRetard, 
-				@DureeEngagement ,
-				1     )
-		PRINT 'Type Abonnement bien ajouté'			
-	END
-	ELSE
-	BEGIN
-		RAISERROR('Ce type d''abonnement existe deja', 9, 1);   
-	END
+            VALUES (	  
+			@Nom, 
+			@PrixLocation,
+			@PrixMensuel, 
+			@MaxJoursLocation, 
+			@NbMaxLocations,
+			@PrixRetard, 
+			@DureeEngagement      
+			  )
 END
 GO
 
@@ -2365,101 +1980,37 @@ CREATE PROCEDURE dbo.abonnement_creer
     
 )
 AS
-
 BEGIN
-
-	IF @DateDebut IS NULL
-	BEGIN
-		RAISERROR(' La date du debut de l''abonnement ne doit pas être null', 9, 1);
-		RETURN;
-	END	
-
-	IF @DateFin IS NULL
-	BEGIN
-		RAISERROR(' La date de fin de l''abonnement ne doit pas être null', 9, 1);
-		RETURN;
-	END	
-	
-	IF @NomClient IS NULL
-	BEGIN
-		RAISERROR(' Le nom du client ne doit pas être null', 9, 1);
-		RETURN;
-	END	
-	
-	IF @PrenomClient IS NULL
-	BEGIN
-		RAISERROR(' Le prenom du client ne doit pas être null', 9, 1);
-		RETURN;
-	END	
-	
-	IF @MailClient IS NULL
-	BEGIN
-		RAISERROR(' Le mail du client ne doit pas être null', 9, 1);
-		RETURN;
-	END	
-	
-	IF @TypeAbonnement IS NULL
-	BEGIN
-		RAISERROR(' Le type de l''abonnement ne doit pas être null', 9, 1);
-		RETURN;
-	END	
-	
-	IF  EXISTS (SELECT * FROM dbo.TypeAbonnement WHERE @TypeAbonnement=dbo.TypeAbonnement.Nom AND dbo.TypeAbonnement.estdispo=0)  
-	BEGIN
-		RAISERROR(' Type d''abonnement non valide', 9, 1);
-		RETURN;
-	END	
-	
-	IF @DateDebut < GETDATE()
-	BEGIN
-		RAISERROR(' Date de debut non valide', 9, 1);
-		RETURN;
-	END
-	IF @DateFin <= @DateDebut
-	BEGIN
-		RAISERROR(' Date fin non valide', 9, 1);
-		RETURN;
-	END
-   
-    IF  NOT EXISTS (SELECT *
-		FROM Abonnement 
-		)
-	BEGIN	
-		-- Insère Type Abonnement
-		INSERT 	INTO dbo.Abonnement
-					   (
-    			Solde ,
-				DateDebut ,
-				DateFin ,
-				NomClient ,
-				PrenomClient ,
-				MailClient ,
-				TypeAbonnement
-				)
+	-- Insère Type Abonnement
+	INSERT 	INTO dbo.Abonnement
+                   (
+    		Solde ,
+			DateDebut ,
+			DateFin ,
+			NomClient ,
+			PrenomClient ,
+			MailClient ,
+			TypeAbonnement
+			)
 
 
-				VALUES (	  	
-    			0, 
-				@DateDebut, 
-				@DateFin ,
-				@NomClient ,
-				@PrenomClient, 
-				@MailClient ,
-				@TypeAbonnement 
-				)
-		PRINT 'Type d''abonnement'			  
-	END
-	ELSE
-	BEGIN
-		RAISERROR('Cet abonnement existe deja', 9, 1);   	
-	END
+            VALUES (	  	
+    		0, 
+			@DateDebut, 
+			@DateFin ,
+			@NomClient ,
+			@PrenomClient, 
+			@MailClient ,
+			@TypeAbonnement 
+			)
+			  print @@IDENTITY
 END
 GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de réapprovisionnement d'un compte      */
-/* Auteur  : RAHMOUN Imane - SAR,GOUYOU Ludovic - TA */
+/* Auteur  : RAHMOUN Imane - SAR, GOUYOU Ludovic - TA*/
 /* Testeur : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
 IF OBJECT_ID ( 'dbo.compte_reapprovisioner', 'P' ) IS NOT NULL 
@@ -2483,57 +2034,6 @@ AS
 END
 GO
 
-
--------------------------------------------------------
-/* IBDR 2013 - Groupe SAR                            */
-/* Procédure de supression d'un type d'abonnement    */
-/* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR                     */
--------------------------------------------------------
-
-IF OBJECT_ID ( 'dbo.type_abonnement_supprimer', 'P' ) IS NOT NULL 
-    DROP PROCEDURE dbo.type_abonnement_supprimer;
-GO
-CREATE PROCEDURE [dbo].[type_abonnement_supprimer]
-@Nom NVARCHAR(32) 
-AS 
-BEGIN  
-	IF EXISTS (	SELECT * FROM Abonnement WHERE Abonnement.TypeAbonnement =@Nom)
-	BEGIN
-	RAISERROR('ce type  ne peux pas etre supprimé ', 9, 1);
-	UPDATE dbo.TypeAbonnement 
-	SET dbo.TypeAbonnement.estdispo = 0
-	END 
-	 
-	ELSE
-	BEGIN
-	DELETE dbo.TypeAbonnement
-	FROM dbo.TypeAbonnement 
-	WHERE  @Nom=Nom
-	END 
-END
-GO
-
--------------------------------------------------------
-/* IBDR 2013 - Groupe SAR                            */
-/* Procédure de supression d'un abonnement           */
-/* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR                     */
--------------------------------------------------------
-IF OBJECT_ID ( 'dbo.abonnement_supprimer', 'P' ) IS NOT NULL 
-    DROP PROCEDURE dbo.abonnement_supprimer;
-GO
-CREATE PROCEDURE [dbo].[abonnement_supprimer]
-@Id INT 
-AS 
-BEGIN  
-
-	DELETE dbo.Abonnement 
-	FROM dbo.Abonnement 
-	WHERE @Id=Id
-
-END
-Go
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Vue des films arrivés                             */
@@ -2691,8 +2191,7 @@ BEGIN
     ELSE
     BEGIN                
         -- Créer la location
-        
-         INTO Location (	AbonnementId,
+        INSERT INTO Location (	AbonnementId,
                                 DateLocation,
                                 DateRetourPrev,
                                 FilmStockId,
