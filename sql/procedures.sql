@@ -376,6 +376,12 @@ CREATE PROCEDURE dbo.edition_modifier_nom
 	@NomEdition NVARCHAR(256)
 AS
 BEGIN
+	IF @NomEdition = '' OR @NomEdition = ' '
+	BEGIN
+		RAISERROR('Le nom d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
 	DECLARE @ROWCOUNT INT
 	SET @ROWCOUNT = 0
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
@@ -416,6 +422,12 @@ CREATE PROCEDURE dbo.edition_modifier_duree
 	@Duree NVARCHAR(9)
 AS
 BEGIN
+	IF @Duree = '' OR @Duree = ' '
+	BEGIN
+		RAISERROR('La duree d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
 	IF EXISTS (SELECT * FROM Edition  WHERE ID = @ID_Edition)
 	BEGIN
 		UPDATE Edition
@@ -444,6 +456,12 @@ CREATE PROCEDURE dbo.edition_modifier_date_sortie
 	@DateSortie NVARCHAR(11)
 AS
 BEGIN
+	IF @DateSortie = '' OR @DateSortie = ' '
+	BEGIN
+		RAISERROR('La date de sortie d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		UPDATE Edition
@@ -472,6 +490,12 @@ CREATE PROCEDURE dbo.edition_modifier_support
 	@Support NVARCHAR(32)
 AS
 BEGIN
+	IF @Support = '' OR @Support = ' '
+	BEGIN
+		RAISERROR('Le support d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
 	IF EXISTS (SELECT * FROM Edition  WHERE ID = @ID_Edition)
 	BEGIN
 		UPDATE Edition
@@ -563,6 +587,12 @@ CREATE PROCEDURE dbo.edition_modifier_age_interdiction
 	@AgeInterdiction INT
 AS
 BEGIN
+	IF @AgeInterdiction = '' OR @AgeInterdiction = ' '
+	BEGIN
+		RAISERROR('L''age d''interdiction d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		UPDATE Edition
@@ -742,9 +772,15 @@ CREATE PROCEDURE dbo.edition_supprimer_editeur
 	@NomEditeur NVARCHAR(64)
 AS
 BEGIN
+
+	IF NOT EXISTS (SELECT * FROM Editeur WHERE Nom = @NomEditeur)
+	BEGIN
+		RAISERROR('Cet editieur n''existe pas!', 11, 1);
+		RETURN
+	END
+	
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-	
 		DECLARE @NombreEditeurs INT
 		SELECT @NombreEditeurs = COUNT(*) FROM EditeurEdition WHERE IdEdition = @ID_Edition
 		
@@ -802,6 +838,12 @@ CREATE PROCEDURE dbo.edition_ajouter_editeur
 	@NomEditeur NVARCHAR(64)
 AS
 BEGIN
+	IF @NomEditeur = '' OR @NomEditeur = ' '
+	BEGIN
+		RAISERROR('Le nom d''editeur ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		IF NOT EXISTS (SELECT *
@@ -890,6 +932,18 @@ CREATE PROCEDURE dbo.filmstock_ajouter
 
 AS
 BEGIN
+	IF @Nombre < 1
+	BEGIN
+		RAISERROR('Il faut ajouter au moins un exemplaire!', 11, 1);
+		RETURN
+	END
+	
+	IF @DateArrivee = '' OR @DateArrivee = ' '
+	BEGIN
+		RAISERROR('La date d''arrive d''exemplaires ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @IdEdition)
 	BEGIN
 		WHILE @Nombre > 0
@@ -927,6 +981,13 @@ CREATE PROCEDURE filmstock_supprimer
 	@ID_FilmStock INT
 AS
 BEGIN
+	
+	IF NOT EXISTS (SELECT *	FROM FilmStock WHERE Id = @ID_FilmStock)
+		BEGIN
+			RAISERROR('Cet exemplaire n''exite pas!', 11, 1);
+			RETURN
+		END
+		
 	IF NOT EXISTS (SELECT *
             			FROM Location
                         WHERE FilmStockId = @ID_FilmStock  AND DateRetourEff IS NULL)
