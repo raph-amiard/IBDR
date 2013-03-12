@@ -210,7 +210,6 @@ CREATE TABLE TypeAbonnement (
 	NbMaxLocations INT NOT NULL,
 	PrixRetard SMALLMONEY NOT NULL,
 	DureeEngagement INT NOT NULL,
-	estdispo        BIT NOT NULL,
 
 	CONSTRAINT PK_TYPEABONNEMENT PRIMARY KEY ( Nom )
 )
