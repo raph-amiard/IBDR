@@ -313,7 +313,13 @@ BEGIN
                         WHERE FilmStockId = @ID_FilmStock AND DateRetourEff IS NULL )
 		BEGIN
 			SET @NombreNonLocation = @NombreNonLocation + 1
-			DELETE FROM FilmStock WHERE Id = @ID_FilmStock 
+			BEGIN TRY	
+				DELETE FROM FilmStock WHERE Id = @ID_FilmStock
+			END TRY
+			BEGIN CATCH		
+				RAISERROR('L''opération avortée : erreur en supprimer exemplaire!', 11, 1);
+				RETURN
+			END CATCH
 		END
 		
 		FETCH NEXT FROM FilmStock
@@ -326,33 +332,48 @@ BEGIN
     -- S'il n'y pas d'exemplaire de l'edition loue 
     IF (@NombreFilmStock = @NombreNonLocation)
     BEGIN
-		DECLARE @NomEditeur NVARCHAR(64)
-		DECLARE Editeur CURSOR FOR
-			SELECT NomEditeur FROM EditeurEdition WHERE IdEdition = @ID_Edition
-		OPEN Editeur
-		FETCH NEXT FROM Editeur
-    		INTO @NomEditeur
-		WHILE @@FETCH_STATUS = 0
-		BEGIN
-			 DELETE FROM EditeurEdition WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
-			 
-			 IF NOT EXISTS (SELECT *
-            				FROM EditeurEdition
-							WHERE NomEditeur = @NomEditeur)
-			BEGIN
-				DELETE FROM Editeur WHERE Nom = @NomEditeur
-				
-				PRINT 'Editeur "' + cast(@NomEditeur AS NVARCHAR) + '" supprimé!'
-			END
-			
+		BEGIN TRAN SUPP_EDITION
+			DECLARE @NomEditeur NVARCHAR(64)
+			DECLARE Editeur CURSOR FOR
+				SELECT NomEditeur FROM EditeurEdition WHERE IdEdition = @ID_Edition
+			OPEN Editeur
 			FETCH NEXT FROM Editeur
     			INTO @NomEditeur
-		END
-		CLOSE Editeur
-		DEALLOCATE Editeur
-	    
-		DELETE FROM Edition WHERE ID = @ID_Edition
-		PRINT 'Edition supprimée!'
+			WHILE @@FETCH_STATUS = 0
+			BEGIN
+				BEGIN TRY
+					 DELETE FROM EditeurEdition WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
+					 
+					 IF NOT EXISTS (SELECT * FROM EditeurEdition WHERE NomEditeur = @NomEditeur)
+					BEGIN
+						DELETE FROM Editeur WHERE Nom = @NomEditeur
+						
+						PRINT 'Editeur "' + cast(@NomEditeur AS NVARCHAR) + '" supprimé!'
+					END
+				END TRY
+				BEGIN CATCH		
+					RAISERROR('L''opération avortée : erreur en supprimer editeur!', 11, 1);
+					ROLLBACK TRAN SUPP_EDITION
+					RETURN
+				END CATCH
+				
+				FETCH NEXT FROM Editeur
+    				INTO @NomEditeur
+			END
+			CLOSE Editeur
+			DEALLOCATE Editeur
+		    
+		    BEGIN TRY
+				DELETE FROM Edition WHERE ID = @ID_Edition
+			END TRY
+			BEGIN CATCH		
+				RAISERROR('L''opération avortée : erreur en supprimer edition!', 11, 1);
+				ROLLBACK TRAN SUPP_EDITION
+				RETURN
+			END CATCH
+			
+			PRINT 'Edition supprimée!'
+		COMMIT TRAN SUPP_EDITION
 	END
 	ELSE
 	BEGIN
@@ -386,9 +407,7 @@ BEGIN
 	SET @ROWCOUNT = 0
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE Edition
-		SET NomEdition = @NomEdition
-		WHERE ID = @ID_Edition
+		UPDATE Edition SET NomEdition = @NomEdition WHERE ID = @ID_Edition
 		
 		SET @ROWCOUNT = @@ROWCOUNT
 		
@@ -428,11 +447,9 @@ BEGIN
 		RETURN
 	END
 	
-	IF EXISTS (SELECT * FROM Edition  WHERE ID = @ID_Edition)
+	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE Edition
-		SET Duree = @Duree
-		WHERE ID = @ID_Edition
+		UPDATE Edition SET Duree = @Duree WHERE ID = @ID_Edition
 		PRINT 'Mis à jour la durée!'
 	END
 	ELSE
@@ -464,9 +481,7 @@ BEGIN
 	
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE Edition
-		SET DateSortie = convert(date,@DateSortie,103)
-		WHERE ID = @ID_Edition
+		UPDATE Edition SET DateSortie = convert(date,@DateSortie,103)WHERE ID = @ID_Edition
 		PRINT 'Mis à jour la date de sortie!'
 	END
 	ELSE
@@ -498,9 +513,7 @@ BEGIN
 	
 	IF EXISTS (SELECT * FROM Edition  WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE Edition
-		SET Support = @Support
-		WHERE ID = @ID_Edition
+		UPDATE Edition SET Support = @Support WHERE ID = @ID_Edition
 		PRINT 'Mis à jour le support!'
 	END
 	ELSE
@@ -526,9 +539,7 @@ AS
 BEGIN
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE Edition
-		SET Couleur = @Couleur
-		WHERE ID = @ID_Edition
+		UPDATE Edition SET Couleur = @Couleur WHERE ID = @ID_Edition
 		PRINT 'Mis à jour la couleur!'
 	END
 	ELSE
@@ -556,9 +567,7 @@ BEGIN
 	BEGIN
 		IF EXISTS (SELECT * FROM Pays WHERE Nom = @Pays)
 		BEGIN
-			UPDATE Edition
-			SET Pays = @Pays
-			WHERE ID = @ID_Edition
+			UPDATE Edition SET Pays = @Pays	WHERE ID = @ID_Edition
 			PRINT 'Mis à jour le pays!'
 		END
 		ELSE
@@ -595,9 +604,7 @@ BEGIN
 	
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		UPDATE Edition
-		SET AgeInterdiction = @AgeInterdiction
-		WHERE ID = @ID_Edition
+		UPDATE Edition SET AgeInterdiction = @AgeInterdiction WHERE ID = @ID_Edition
 		PRINT 'Mis à jour l''age d''interdiction!'
 	END
 	ELSE
@@ -703,8 +710,7 @@ BEGIN
 		BEGIN
 			IF ((SELECT COUNT(*) FROM EditionLangueAudio ) > 1)
 			BEGIN
-				DELETE FROM EditionLangueAudio 
-					WHERE IdEdition = @ID_Edition AND NomLangue = @LangueAudio
+				DELETE FROM EditionLangueAudio WHERE IdEdition = @ID_Edition AND NomLangue = @LangueAudio
 				PRINT 'La langue d''audio a été supprimée!'
 			END
 			ELSE
@@ -742,8 +748,7 @@ BEGIN
 	BEGIN
 		IF EXISTS (SELECT * FROM Langue WHERE Nom = @LangueSousTitres)
 		BEGIN
-			DELETE FROM EditionLangueSousTitres
-				WHERE IdEdition = @ID_Edition AND NomLangue = @LangueSousTitres
+			DELETE FROM EditionLangueSousTitres WHERE IdEdition = @ID_Edition AND NomLangue = @LangueSousTitres
 			PRINT 'La langue de sous-titres a été supprimée!'
 		END
 		ELSE
@@ -788,8 +793,7 @@ BEGIN
 		BEGIN
 			DECLARE @Editeur NVARCHAR(64)
 			DECLARE Editeur CURSOR FOR
-				SELECT NomEditeur FROM EditeurEdition
-									WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
+				SELECT NomEditeur FROM EditeurEdition WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
 			OPEN Editeur
 			FETCH NEXT FROM Editeur
     			INTO @Editeur
@@ -797,9 +801,7 @@ BEGIN
 			BEGIN
 				 DELETE FROM EditeurEdition WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
 				 
-				 IF NOT EXISTS (SELECT *
-            					FROM EditeurEdition
-								WHERE NomEditeur = @NomEditeur)
+				 IF NOT EXISTS (SELECT * FROM EditeurEdition WHERE NomEditeur = @NomEditeur)
 				BEGIN
 					DELETE FROM Editeur WHERE Nom = @NomEditeur
 					PRINT 'L''editeur "' + cast(@NomEditeur AS NVARCHAR) +'" a été supprimé de la base données!'
@@ -846,9 +848,7 @@ BEGIN
 	
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
-		IF NOT EXISTS (SELECT *
-        				FROM Editeur
-						WHERE Nom = @NomEditeur)
+		IF NOT EXISTS (SELECT * FROM Editeur WHERE Nom = @NomEditeur)
 		BEGIN
 
 			INSERT INTO Editeur
@@ -893,9 +893,7 @@ BEGIN
 	IF EXISTS (SELECT * FROM Editeur WHERE Nom = @NomEditeur)
 	BEGIN
 					
-		UPDATE Editeur
-		SET Nom = @NomEditeurNouv
-		WHERE Nom = @NomEditeur
+		UPDATE Editeur SET Nom = @NomEditeurNouv WHERE Nom = @NomEditeur
 		
 		SET @ROWCOUNT = @@ROWCOUNT
 		
@@ -988,9 +986,7 @@ BEGIN
 			RETURN
 		END
 		
-	IF NOT EXISTS (SELECT *
-            			FROM Location
-                        WHERE FilmStockId = @ID_FilmStock  AND DateRetourEff IS NULL)
+	IF NOT EXISTS (SELECT * FROM Location WHERE FilmStockId = @ID_FilmStock  AND DateRetourEff IS NULL)
 		BEGIN
 			DELETE FROM FilmStock WHERE ID = @ID_FilmStock
 			PRINT 'Un exemplaire a été supprimé!'
@@ -1973,7 +1969,7 @@ BEGIN TRAN @TransactionMain
 			Select @tmp=count(*) From Edition where Edition.FilmTitreVF=@titre_VF AND 
 					Edition.FilmTitreVF=@annee_Sortie;
 					
-			IF @tmp>0
+			IF @tmp=0
 				Delete Film Where Film.TitreVF=@titre_VF and Film.AnneeSortie=@annee_Sortie;
 					
 		End	
@@ -2692,7 +2688,7 @@ BEGIN
     BEGIN                
         -- Créer la location
         
-         INTO Location (	AbonnementId,
+         INSERT INTO Location (	AbonnementId,
                                 DateLocation,
                                 DateRetourPrev,
                                 FilmStockId,
