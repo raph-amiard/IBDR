@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
-/* Test de la procedure pour mettre à jour une Edition                         */
+/* Test de la procedure pour mettre à jour tous les attributs d'une Edition    */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------

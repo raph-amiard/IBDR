@@ -1,6 +1,9 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
 /* Test de la procedure pour mettre à jour les langues d'une Edition           */
+/* 1- Supprimer langues (Audio et Sous-Titres)                                 */
+/* 2- Ajoueter langues (Audio et Sous-Titres)                                  */
+/*                                                                             */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------

@@ -1,6 +1,10 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
 /* Test de la procedure pour mettre à jour l'editeur d'une Edition             */
+/* 1- Supprimer editeur                                                        */
+/* 2- Ajoueter editeur                                                         */
+/* 3- Modidier editeur                                                         */
+/*                                                                             */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
