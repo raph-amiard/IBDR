@@ -283,8 +283,15 @@ CREATE PROCEDURE dbo.edition_supprimer
 AS
 BEGIN
 
+	IF NOT EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
+	BEGIN
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
+		RETURN
+	END
+	
     /**
     * Vérifier le nombre d'exemplaires (FilmStock) et le nombre d'exemplaires loués
+    * et supprimer les exemplaire que ne sont pas loué
     **/
 	DECLARE @NombreFilmStock INT
 	SELECT @NombreFilmStock = COUNT(*) FROM FilmStock WHERE IdEdition = @ID_Edition
@@ -306,6 +313,7 @@ BEGIN
                         WHERE FilmStockId = @ID_FilmStock AND DateRetourEff IS NULL )
 		BEGIN
 			SET @NombreNonLocation = @NombreNonLocation + 1
+			DELETE FROM FilmStock WHERE Id = @ID_FilmStock 
 		END
 		
 		FETCH NEXT FROM FilmStock
@@ -348,6 +356,7 @@ BEGIN
 	END
 	ELSE
 	BEGIN
+		UPDATE Edition SET Supprimer = 1 WHERE ID = @ID_Edition		
 		RAISERROR('Edition ne peut pas être supprimée, car il y a un examplaire loué!', 11, 1);
 	END
 END    
