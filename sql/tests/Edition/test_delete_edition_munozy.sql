@@ -138,24 +138,13 @@ INSERT INTO RelanceRetard
            ('07/04/2013 10:00:00:000'
            ,@ID_LOCATION
            ,2)
-GO
 
 /** L'état de la base données par rapport les tables qui seront modifiés **/
 SELECT ee.NomEditeur, e.NomEdition, fs.Id AS Exemplaire_ID, l.Id AS Location_ID, rr.Date AS RelanceRetard_Date
 	FROM Edition e, EditeurEdition ee, FilmStock fs, Location l, RelanceRetard rr 
 	WHERE  e.Id = ee.IdEdition AND fs.IdEdition = e.Id AND fs.Id = l.FilmStockId AND l.Id = rr.LocationId
-GO
 	
---SELECT * FROM Location
---GO
-
---SELECT * FROM RelanceRetard
---GO
-
 /** Exécution de la procedure **/
-DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = ID FROM  Edition WHERE NomEdition = 'Box Edition'
-
 EXEC dbo.edition_supprimer
 	@ID_Edition = @ID_EDITION
 		

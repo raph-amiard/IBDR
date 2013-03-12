@@ -1,6 +1,6 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
-/* Test de la procedure pour mettre à jour une Edition                         */
+/* Test de la procedure pour mettre à jour les langues d'une Edition           */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
@@ -31,7 +31,7 @@ EXEC dbo.edition_creer
 		@Duree = '01:24:00',
 		@DateSortie = '20/02/2011',
 		@Support = 'DVD',
-		@Couleur = 0,
+		@Couleur = 1,
 		@Pays = 'Brésil',
 		@NomEdition = 'Box Edition',
 		@AgeInterdiction = 18,
@@ -42,38 +42,39 @@ EXEC dbo.edition_creer
 DECLARE @ID_EDITION INT
 SELECT @ID_EDITION = ID FROM  Edition WHERE NomEdition = 'Box Edition'
 
+
 /** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM Edition
+SELECT e.NomEdition, eda.NomLangue AS LangueAudio FROM Edition e inner join EditionLangueAudio eda ON e.Id = eda.IdEdition
+
+SELECT e.NomEdition, eds.NomLangue AS LangueSousTitres FROM Edition e inner join EditionLangueSousTitres eds ON e.Id = eds.IdEdition
 
 /** Exécution de la procedure **/
-EXEC dbo.edition_modifier_nom
+EXEC dbo.edition_supprimer_langue_audio
 	@ID_Edition = @ID_EDITION,
-	@NomEdition = 'Box Special Edition'
+	@LangueAudio = 'Français'
 
-EXEC  dbo.edition_modifier_duree
+EXEC dbo.edition_supprimer_langue_sous_titres
 	@ID_Edition = @ID_EDITION,
-	@Duree = '01:54:00'
-	
-EXEC dbo.edition_modifier_date_sortie
-	@ID_Edition = @ID_EDITION,
-	@DateSortie = '25/02/2012'
-
-EXEC dbo.edition_modifier_support
-	@ID_Edition = @ID_EDITION,
-	@Support = 'Blu-ray'
-	
-EXEC dbo.edition_modifier_couleur
-	@ID_Edition = @ID_EDITION,
-	@Couleur = 1
-
-EXEC dbo.edition_modifier_pays
-	@ID_Edition = @ID_EDITION,
-	@Pays = 'France'
-		
-EXEC dbo.edition_modifier_age_interdiction
-	@ID_Edition = @ID_EDITION,
-	@AgeInterdiction = 12
+	@LangueSousTitres = 'Anglais'
 	
 /** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT * FROM Edition
+SELECT e.NomEdition, eda.NomLangue AS LangueAudio FROM Edition e inner join EditionLangueAudio eda ON e.Id = eda.IdEdition
+
+SELECT e.NomEdition, eds.NomLangue AS LangueSousTitres FROM Edition e inner join EditionLangueSousTitres eds ON e.Id = eds.IdEdition
+
+
+/** Exécution de la procedure **/
+EXEC dbo.edition_ajouter_langue_audio
+	@ID_Edition = @ID_EDITION,
+	@LangueAudio = 'Chinois'
+
+EXEC dbo.edition_ajouter_langue_sous_titres
+	@ID_Edition = @ID_EDITION,
+	@LangueSousTitres = 'Chinois'
+	
+/** L'état de la base données par rapport les tables qui ont été modifiés **/
+SELECT e.NomEdition, eda.NomLangue AS LangueAudio FROM Edition e inner join EditionLangueAudio eda ON e.Id = eda.IdEdition
+
+SELECT e.NomEdition, eds.NomLangue AS LangueSousTitres FROM Edition e inner join EditionLangueSousTitres eds ON e.Id = eds.IdEdition
+
 
