@@ -1,6 +1,6 @@
 ﻿---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
-/* Auteurs  : GOUYOU Ludovic - TA                                              */
+/* Auteurs  : RAHMOUN Imane - SAR,GOUYOU Ludovic - TA                                              */
 ---------------------------------------------------------------------------------
 EXEC _Vide_BD
 EXEC _Ajout_Client
@@ -49,6 +49,48 @@ END TRY
 BEGIN CATCH
 	PRINT 'ERREUR ATTENDU : ' + CONVERT (varchar, ERROR_NUMBER()) + ' : ' + ERROR_MESSAGE();
 END CATCH
+
+PRINT 'TEST D''Ajout d''un client avec champs vide'
+BEGIN TRY
+	EXEC client_creer
+		@Civilite='Monsieur',
+		@Nom=NULL,
+		@Prenom='François',
+		@DateNaissance=@date,
+		@Mail='toto.tata@gmail.com',
+		@Telephone1='0525636595',
+		@Telephone2='0145786933',	
+		@NumRue=6,
+		@TypeRue='',
+		@NomRue='Carnot',
+		@ComplementAdresse = '2ieme étage porte gauche',
+		@CodePostal='33170',
+		@Ville='GRADIGNAN'
+END TRY
+BEGIN CATCH
+	PRINT 'ERREUR ATTENDU : ' + CONVERT (varchar, ERROR_NUMBER()) + ' : ' + ERROR_MESSAGE();
+END CATCH
+PRINT 'TEST de contraintes'
+BEGIN TRY
+	EXEC client_creer
+		@Civilite='Monsieur',
+		@Nom='DUPON',
+		@Prenom='Françoi',
+		@DateNaissance=@date,
+		@Mail='toto.tata@gmail.com',
+		@Telephone1='0525636595',
+		@Telephone2='0145786933',	
+		@NumRue=6,
+		@TypeRue='aaaa',
+		@NomRue='Carnot',
+		@ComplementAdresse = '2ieme étage porte gauche',
+		@CodePostal='33170',
+		@Ville='GRADIGNAN'
+END TRY
+BEGIN CATCH
+	PRINT 'ERREUR ATTENDU : ' + CONVERT (varchar, ERROR_NUMBER()) + ' : ' + ERROR_MESSAGE();
+END CATCH
+
 
 PRINT ' '
 PRINT 'Fin test'
