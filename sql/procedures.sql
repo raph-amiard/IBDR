@@ -321,6 +321,10 @@ BEGIN
 				RETURN
 			END CATCH
 		END
+		ELSE
+		BEGIN
+			UPDATE FilmStock SET Supprimer = 1 WHERE ID = @ID_FilmStock	
+		END
 		
 		FETCH NEXT FROM FilmStock
     		INTO @ID_FilmStock
@@ -949,11 +953,13 @@ BEGIN
 			INSERT INTO FilmStock
 					   (DateArrivee
 					   ,Usure
-					   ,IdEdition)
+					   ,IdEdition
+					   ,Supprimer)
 				 VALUES
 					   (convert(datetime,@DateArrivee,103) 
 					   ,@Usure
-					   ,@IdEdition)
+					   ,@IdEdition
+					   ,0)
 		
 			SET @Nombre -= 1	
 			PRINT 'Uun exemplaire a été ajouté!'				  
