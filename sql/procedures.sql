@@ -2598,7 +2598,7 @@ GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
-/* Procédure de modification d'un abonnement         */
+/* Procédure de relace sur retard                    */
 /* Auteur  : GOUYOU Ludovic - TA                     */
 /* Auteur  : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
@@ -2672,6 +2672,76 @@ BEGIN
 	CLOSE Retard
 	DEALLOCATE Retard
 END
+GO
+
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de relace sur decouvert                 */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+-------------------------------------------------------
+
+IF OBJECT_ID ( 'relance_sur_découvert', 'P' ) IS NOT NULL 
+    DROP PROCEDURE relance_sur_découvert;
+GO
+CREATE PROCEDURE [dbo].[relance_sur_découvert]
+AS
+BEGIN
+	DECLARE @MinSolde SMALLMONEY
+	SET @MinSolde = 0
+	DECLARE @MaxRelance INT
+	SET @MaxRelance = 5
+	DECLARE @id_abonnement INT
+	DECLARE Decouvert CURSOR FOR
+		SELECT Id FROM Abonnement
+		WHERE Solde < @MinSolde
+	OPEN Decouvert
+	FETCH NEXT FROM Decouvert
+		INTO @id_abonnement
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		IF NOT EXISTS (	
+			SELECT * FROM RelanceDecouvert 
+			WHERE AbonnementId = @id_abonnement
+		)
+		BEGIN
+			INSERT INTO RelanceDecouvert (Date, AbonnementId, Niveau) 
+			VALUES (CURRENT_TIMESTAMP, @id_abonnement, 1);
+		END
+		ELSE
+		BEGIN
+			IF EXISTS (
+			SELECT * from RelanceDecouvert 
+			WHERE AbonnementId = @id_abonnement and Niveau >= @MaxRelance
+		)
+		BEGIN
+			IF NOT EXISTS (SELECT * from Client as c 
+			inner join Abonnement as a 
+			on c.Nom = a.NomClient and c.Prenom = a.PrenomClient and c.Mail = a.MailClient
+			where c.BlackListe = 1 and a.Id = @id_abonnement
+			)
+			BEGIN
+			UPDATE Client
+			SET BlackListe = 1
+			from Client as c
+			inner join Abonnement as a 
+			on c.Nom = a.NomClient and c.Prenom = a.PrenomClient and c.Mail = a.MailClient
+			where a.Id = @id_abonnement
+			END
+		END
+		ELSE
+		BEGIN
+			UPDATE RelanceDecouvert
+            SET Niveau += 1, Date = CURRENT_TIMESTAMP
+            WHERE AbonnementId = @id_abonnement
+			END
+		END
+		FETCH NEXT FROM Decouvert
+			INTO @id_abonnement
+	END
+	CLOSE Decouvert
+	DEALLOCATE Decouvert 
+END 
 GO
 
 -------------------------------------------------------
