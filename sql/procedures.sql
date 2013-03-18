@@ -2209,9 +2209,9 @@ GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
-/* Procedure de création d'un type d'abonnement                 */
+/* Procedure de création d'un type d'abonnement      */
 /* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : GOUYOU Ludovic - TA                     */
+/* Testeur : RAHMOUN Imane - SAR ,GOUYOU Ludovic - TA  */
 -------------------------------------------------------
 IF OBJECT_ID ('dbo.type_abonnement_creer', 'P') IS NOT NULL 
     DROP PROCEDURE dbo.type_abonnement_creer;
@@ -2350,8 +2350,7 @@ GO
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de creation d'un abonnement             */
 /* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : GOUYOU Ludovic - TA                     */
-/* Debug : GOUYOU Ludovic - TA                       */
+/* Testeur : RAHMOUN Imane - SAR ,GOUYOU Ludovic - TA*/
 -------------------------------------------------------
 IF OBJECT_ID ('dbo.abonnement_creer', 'P') IS NOT NULL 
     DROP PROCEDURE dbo.abonnement_creer;
@@ -2419,7 +2418,7 @@ BEGIN
 		RETURN;
 	END	
 	
-	IF @DateDebut < GETDATE()
+	IF @DateDebut < CURRENT_TIMESTAMP
 	BEGIN
 		RAISERROR(' Date de debut non valide', 9, 1);
 		RETURN;
@@ -2534,6 +2533,87 @@ BEGIN
 
 END
 Go
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de modification d'un type d'abonnement    */
+/* Auteur  : RAHMOUN Imane - SAR                     */
+/* Testeur : RAHMOUN Imane - SAR                     */
+-------------------------------------------------------
+IF OBJECT_ID ( 'dbo.typeAbonnement_modifier', 'P' ) IS NOT NULL 
+    DROP PROCEDURE dbo.typeAbonnement_modifier;
+GO
+    CREATE PROCEDURE [dbo].[dbo.typeAbonnement_modifier]
+	@Nom NVARCHAR(32) ,
+	@PrixMensuel SMALLMONEY ,
+	@PrixLocation SMALLMONEY ,
+	@MaxJoursLocation INT ,
+	@NbMaxLocations INT ,
+	@PrixRetard SMALLMONEY ,
+	@DureeEngagement INT 
+AS
+BEGIN 
+IF EXISTS (SELECT * FROM TypeAbonnement WHERE  TypeAbonnement.Nom =@Nom)
+BEGIN 
+UPDATE TypeAbonnement 
+SET 
+TypeAbonnement.Nom = @Nom,
+TypeAbonnement.PrixMensuel= @PrixMensuel,
+TypeAbonnement.Prixlocation = @Prixlocation,
+TypeAbonnement.MaxJoursLocation = @MaxJoursLocation,
+TypeAbonnement.NbMaxLocations = @NbMaxLocations,
+TypeAbonnement.PrixRetard = @PrixRetard,
+TypeAbonnement.DureeEngagement = @DureeEngagement 
+WHERE 
+TypeAbonnement.Nom =@Nom
+END
+ELSE 
+BEGIN
+PRINT 'Ce type d abonnement n existe pas'
+END
+
+END
+GO
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de modification d'un abonnement         */
+/* Auteur  : RAHMOUN Imane - SAR                     */
+/* Testeur : RAHMOUN Imane - SAR                     */
+-------------------------------------------------------
+IF OBJECT_ID ( 'dbo.renouvellement_abonnement', 'P' ) IS NOT NULL 
+    DROP PROCEDURE dbo.renouvellement_abonnement;
+GO
+CREATE PROCEDURE[dbo].[renouvellement_abonnement]
+	@Id INT  ,
+    @Solde SMALLMONEY ,
+	@DateDebut DATETIME ,
+	@DateFin DATETIME ,
+	@NomClient NVARCHAR(64) ,
+	@PrenomClient NVARCHAR(64) ,
+	@MailClient NVARCHAR(128) ,
+	@TypeAbonnement NVARCHAR(32) 
+AS
+
+BEGIN
+IF EXISTS (SELECT * FROM Abonnemet WHERE Abonnement.Id = @Id) 
+BEGIN 
+UPDATE dbo.Abonnement 
+SET 
+Abonnement.Solde = @Solde,
+Abonnement.DateDebut= @DateDebut,
+Abonnement.DateFin = @DateFin,
+Abonnement.NomClient = @NomClient,
+Abonnement.PrenomClient = @PrenomClient,
+Abonnement.MailClient = @MailClient,
+Abonnement.TypeAbonnement = @TypeAbonnement 
+WHERE 
+dbo.Abonnement.Id =@Id
+END
+ELSE
+BEGIN
+print 'cet abonnement n''existe pas'
+END
+END
+GO
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Vue des films arrivés                             */
