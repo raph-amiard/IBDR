@@ -9,12 +9,17 @@ EXEC _Vide_BD
 EXEC _Ajout_Abonnement
 PRINT 'Avant execution'
 
-select * from Client
-select * from TypeAbonnement
-select * from Abonnement
+select Abonnement.*, TypeAbonnement.Nom, Client.Nom, Client.Prenom, Client.Mail 
+	from Abonnement 
+	inner join TypeAbonnement 
+		on Abonnement.TypeAbonnement = TypeAbonnement.Nom
+	inner join Client 
+		on Abonnement.NomClient = Client.Nom 
+		and Abonnement.PrenomClient = Client.Prenom
+		and Abonnement.MailClient = Client.Mail
 
 Declare @dateDebut DATE
-SET @dateDebut = CURRENT_TIMESTAMP-50;
+SET @dateDebut = CURRENT_TIMESTAMP+1;
 Declare @dateFin DATE
 SET @dateFin = CURRENT_TIMESTAMP+40;
 BEGIN TRY
@@ -46,7 +51,14 @@ END CATCH
 
 PRINT ' '
 PRINT 'Fin test'
-select * from Client
-select * from TypeAbonnement
-select * from Abonnement
+
+select Abonnement.*, TypeAbonnement.Nom, Client.Nom, Client.Prenom, Client.Mail 
+	from Abonnement 
+	inner join TypeAbonnement 
+		on Abonnement.TypeAbonnement = TypeAbonnement.Nom
+	inner join Client 
+		on Abonnement.NomClient = Client.Nom 
+		and Abonnement.PrenomClient = Client.Prenom
+		and Abonnement.MailClient = Client.Mail
+
 EXEC _Vide_BD
