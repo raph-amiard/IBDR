@@ -2351,6 +2351,7 @@ GO
 /* Procedure de creation d'un abonnement             */
 /* Auteur  : RAHMOUN Imane - SAR                     */
 /* Testeur : GOUYOU Ludovic - TA                     */
+/* Debug : GOUYOU Ludovic - TA                       */
 -------------------------------------------------------
 IF OBJECT_ID ('dbo.abonnement_creer', 'P') IS NOT NULL 
     DROP PROCEDURE dbo.abonnement_creer;
@@ -2406,6 +2407,12 @@ BEGIN
 		RETURN;
 	END	
 	
+	IF  NOT EXISTS (SELECT * FROM dbo.TypeAbonnement WHERE @TypeAbonnement=dbo.TypeAbonnement.Nom)  
+	BEGIN
+		RAISERROR(' Type d''abonnement non valide', 9, 1);
+		RETURN;
+	END	
+	
 	IF  EXISTS (SELECT * FROM dbo.TypeAbonnement WHERE @TypeAbonnement=dbo.TypeAbonnement.Nom AND dbo.TypeAbonnement.estdispo=0)  
 	BEGIN
 		RAISERROR(' Type d''abonnement non valide', 9, 1);
@@ -2423,38 +2430,29 @@ BEGIN
 		RETURN;
 	END
    
-    IF  NOT EXISTS (SELECT *
-		FROM Abonnement 
-		)
-	BEGIN	
-		-- Insère Type Abonnement
-		INSERT 	INTO dbo.Abonnement
-					   (
-    			Solde ,
-				DateDebut ,
-				DateFin ,
-				NomClient ,
-				PrenomClient ,
-				MailClient ,
-				TypeAbonnement
-				)
+	-- Insère Type Abonnement
+	INSERT 	INTO dbo.Abonnement
+				   (
+			Solde ,
+			DateDebut ,
+			DateFin ,
+			NomClient ,
+			PrenomClient ,
+			MailClient ,
+			TypeAbonnement
+			)
 
 
-				VALUES (	  	
-    			0, 
-				@DateDebut, 
-				@DateFin ,
-				@NomClient ,
-				@PrenomClient, 
-				@MailClient ,
-				@TypeAbonnement 
-				)
-		PRINT 'Type d''abonnement'			  
-	END
-	ELSE
-	BEGIN
-		RAISERROR('Cet abonnement existe deja', 9, 1);   	
-	END
+			VALUES (	  	
+			0, 
+			@DateDebut, 
+			@DateFin ,
+			@NomClient ,
+			@PrenomClient, 
+			@MailClient ,
+			@TypeAbonnement 
+			)
+	PRINT 'Type d''abonnement'			  
 END
 GO
 
