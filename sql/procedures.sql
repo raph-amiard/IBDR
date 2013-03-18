@@ -2210,8 +2210,8 @@ GO
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de création d'un type d'abonnement      */
-/* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR ,GOUYOU Ludovic - TA  */
+/* Auteur  : RAHMOUN Imane - SAR, GOUYOU Ludovic - TA*/
+/* Testeur : RAHMOUN Imane - SAR, GOUYOU Ludovic - TA*/
 -------------------------------------------------------
 IF OBJECT_ID ('dbo.type_abonnement_creer', 'P') IS NOT NULL 
     DROP PROCEDURE dbo.type_abonnement_creer;
@@ -2349,8 +2349,8 @@ GO
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de creation d'un abonnement             */
-/* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR ,GOUYOU Ludovic - TA*/
+/* Auteur  : RAHMOUN Imane - SAR, GOUYOU Ludovic - TA*/
+/* Testeur : RAHMOUN Imane - SAR, GOUYOU Ludovic - TA*/
 -------------------------------------------------------
 IF OBJECT_ID ('dbo.abonnement_creer', 'P') IS NOT NULL 
     DROP PROCEDURE dbo.abonnement_creer;
@@ -2487,7 +2487,7 @@ GO
 /* IBDR 2013 - Groupe SAR                            */
 /* Procédure de supression d'un type d'abonnement    */
 /* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR                     */
+/* Testeur : RAHMOUN Imane - SAR, GOUYOU Ludovic - TA*/
 -------------------------------------------------------
 
 IF OBJECT_ID ( 'dbo.type_abonnement_supprimer', 'P' ) IS NOT NULL 
@@ -2517,9 +2517,9 @@ GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
-/* Procédure de modification d'un type d'abonnement    */
+/* Procédure de modification d'un type d'abonnement  */
 /* Auteur  : RAHMOUN Imane - SAR                     */
-/* Testeur : RAHMOUN Imane - SAR                     */
+/* Testeur : RAHMOUN Imane - SAR, GOUYOU Ludovic - TA*/
 -------------------------------------------------------
 IF OBJECT_ID ( 'dbo.typeAbonnement_modifier', 'P' ) IS NOT NULL 
     DROP PROCEDURE dbo.typeAbonnement_modifier;

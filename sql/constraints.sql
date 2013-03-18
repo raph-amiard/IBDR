@@ -72,10 +72,11 @@ GO
 /* Contraintes pour la table Location         */
 /* Auteur  : MUNOZ Yupanqui - SAR             */
 /* Testeur : MUNOZ Yupanqui - SAR             */
+/* Debug : GOUYOU Ludovic                     */
 ------------------------------------------------
 ALTER TABLE [dbo].[Location]
 ADD 
-	CONSTRAINT chk_location_datelocation CHECK ([DateLocation] >= GETDATE()),
+--	CONSTRAINT chk_location_datelocation CHECK ([DateLocation] >= GETDATE()),
 	CONSTRAINT chk_location_dateretourprev CHECK ([DateRetourPrev] > [DateLocation]),
 	CONSTRAINT chk_location_dateretoureff CHECK ([DateRetourEff] > [DateLocation])
 GO
@@ -176,10 +177,11 @@ GO
 /* Contraintes pour la table Abonnement       */
 /* Auteur  : MUNOZ Yupanqui - SAR             */
 /* Testeur : MUNOZ Yupanqui - SAR             */
+/* Debug : GOUYOU Ludovic                     */
 ------------------------------------------------
 ALTER TABLE [dbo].[Abonnement]
 ADD 
-	CONSTRAINT chk_abonnement_datedebut CHECK ([DateDebut] >= GETDATE()),
+--	CONSTRAINT chk_abonnement_datedebut CHECK ([DateDebut] >= GETDATE()),
 	CONSTRAINT chk_abonnement_datefin CHECK ([DateFin] > [DateDebut])
 GO
 

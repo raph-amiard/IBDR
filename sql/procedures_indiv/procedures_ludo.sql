@@ -101,7 +101,7 @@ BEGIN
 		BEGIN
 			IF EXISTS (
 			SELECT * from RelanceDecouvert 
-			WHERE AbonnementId = @id_abonnement and Niveau >= @max
+			WHERE AbonnementId = @id_abonnement and Niveau >= @MaxRelance
 		)
 		BEGIN
 			IF NOT EXISTS (SELECT * from Client as c 

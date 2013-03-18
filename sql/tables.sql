@@ -121,7 +121,7 @@ CREATE TABLE Edition (
 
 -------------------------------------
 /* IBDR 2013 – Groupe SAR          */
-/* Création de la table FilmStock   */
+/* Création de la table FilmStock  */
 /* Auteur  : AMIARD Raphaël - SAR  */
 /* Testeur : AMIARD Raphaël - SAR  */
 /*           MUNOZ Yupanqui - SAR  */
@@ -170,7 +170,7 @@ CREATE TABLE Genre (
 
 -------------------------------------
 /* IBDR 2013 – Groupe SAR          */
-/* Création de la table Client   */
+/* Création de la table Client     */
 /* Auteur  : AMIARD Raphaël - SAR  */
 /* Testeur : AMIARD Raphaël - SAR  */
 -------------------------------------
@@ -218,7 +218,7 @@ CREATE TABLE TypeAbonnement (
 
 -------------------------------------
 /* IBDR 2013 – Groupe SAR          */
-/* Création de la table Abonnement   */
+/* Création de la table Abonnement */
 /* Auteur  : AMIARD Raphaël - SAR  */
 /* Testeur : AMIARD Raphaël - SAR  */
 -------------------------------------
