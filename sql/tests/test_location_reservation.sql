@@ -30,12 +30,6 @@ INSERT INTO [IBDR_SAR].[dbo].[Film]
            ,'À l’époque de l’épisode de la France Antarctique et dans le contexte des affrontements au xvi siècle entre Français et Portugais pour la colonisation du Brésil, le film raconte l’histoire d’un jeune Français recueilli par une tribu cannibale Tupinambas...')
 GO
 
-INSERT INTO [IBDR_SAR].[dbo].[Pays]
-           ([Nom])
-     VALUES
-           ('Brésil')
-GO
-
 EXEC dbo.edition_creer 
 		@FilmTitreVF = 'Qu''il était bon mon petit français',
 		@FilmAnneeSortie = '1971',
