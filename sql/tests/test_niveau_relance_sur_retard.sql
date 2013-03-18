@@ -43,7 +43,6 @@ EXEC dbo.edition_creer
 		@ListLangueAudio = '|Portugue|',
 		@ListLangueSousTitres = '|Portugue|'
 
-/** Exécution de la procedure **/
 
 DECLARE @id_edition INT
 SELECT @id_edition = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'

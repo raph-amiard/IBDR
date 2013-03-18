@@ -2598,7 +2598,7 @@ GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
-/* Procédure de relace sur retard                    */
+/* Procédure de relance sur retard                   */
 /* Auteur  : GOUYOU Ludovic - TA                     */
 /* Auteur  : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
@@ -2676,7 +2676,7 @@ GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
-/* Procédure de relace sur decouvert                 */
+/* Procédure de relance sur decouvert                */
 /* Auteur  : GOUYOU Ludovic - TA                     */
 /* Auteur  : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
@@ -2743,6 +2743,45 @@ BEGIN
 	DEALLOCATE Decouvert 
 END 
 GO
+
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de relace sur decouvert                 */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+-------------------------------------------------------
+
+IF OBJECT_ID ( 'echeance_prochaine_abonnement', 'P' ) IS NOT NULL 
+    DROP PROCEDURE echeance_prochaine_abonnement;
+GO
+CREATE PROCEDURE [dbo].[echeance_prochaine_abonnement] (
+	@DateDiff INT
+)
+AS
+BEGIN
+	DECLARE @id_abonnement INT
+	DECLARE @dateFIN DATETIME 
+	DECLARE AbonementFin CURSOR FOR
+		SELECT Abonnement.Id, Abonnement.DateFin FROM Abonnement
+		inner join Client
+		on Abonnement.NomClient = Client.Nom
+		and Abonnement.PrenomClient = Client.Prenom
+		and Abonnement.MailClient = Client.Mail
+		WHERE DATEDIFF(day, CURRENT_TIMESTAMP, DateFin) < @DateDiff 
+			and DATEDIFF(day, CURRENT_TIMESTAMP, DateFin) > 0
+			and Client.BlackListe = 0
+	OPEN AbonementFin
+	FETCH NEXT FROM AbonementFin
+		INTO @id_abonnement, @dateFIN
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		PRINT('Abonnement ' + CAST(@id_abonnement AS VARCHAR) + ' arrive a son terme le ' + CAST(@dateFIN AS VARCHAR))
+		FETCH NEXT FROM AbonementFin
+			INTO @id_abonnement, @dateFIN
+	END
+	CLOSE AbonementFin
+	DEALLOCATE AbonementFin
+END
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */

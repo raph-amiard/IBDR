@@ -43,7 +43,6 @@ EXEC dbo.edition_creer
 		@ListLangueAudio = '|Portugue|',
 		@ListLangueSousTitres = '|Portugue|'
 
-
 DECLARE @id_edition INT
 SELECT @id_edition = [ID] FROM  [IBDR_SAR].[dbo].[Edition] WHERE [NomEdition] = 'Box Edition'
 
@@ -79,43 +78,42 @@ INSERT INTO [dbo].[Location]
 SET IDENTITY_INSERT [dbo].[Location] OFF
 
 UPDATE Abonnement
-	set Solde = -10
+	set DateFin = CURRENT_TIMESTAMP+5
 	where Id = 2
 
 UPDATE Abonnement
-	set Solde = -10
+	set DateFin = CURRENT_TIMESTAMP+4
 	where Id = 1
+
+UPDATE Abonnement
+	set DateFin = CURRENT_TIMESTAMP-1
+	where Id = 0
+
+SET IDENTITY_INSERT [dbo].[Abonnement] ON
+INSERT INTO [dbo].[Abonnement] ([Id], [Solde], [DateDebut], [DateFin], [NomClient], [PrenomClient], [MailClient], [TypeAbonnement]) VALUES (3, CAST(30.0000 AS SmallMoney), CURRENT_TIMESTAMP-20, CURRENT_TIMESTAMP+3, N'DUPONT', N'Lucien', N'DUPONT.Lucien@gmail.com', N'Classic')
+SET IDENTITY_INSERT [dbo].[Abonnement] OFF
+
+UPDATE Client
+	set BlackListe = 1
+	where Prenom = 'Lucienne'
 
 INSERT INTO [dbo].[RelanceDecouvert] ([AbonnementId], [Date], [Niveau]) VALUES (2, N'2013-03-18 22:35:20', 5)
 
 INSERT INTO [dbo].[RelanceRetard] ([Date], [LocationId], [Niveau]) VALUES (N'2013-03-18 22:01:21', 5, 5)
 
 PRINT 'Avant execution'
-select RelanceDecouvert.AbonnementId, RelanceDecouvert.Date, RelanceDecouvert.Niveau, 
-		Abonnement.Id, 
-		Abonnement.NomClient, Abonnement.PrenomClient, Abonnement.MailClient, Abonnement.Solde,
+select	Abonnement.Id, Abonnement.DateFin, 
+		Abonnement.NomClient, Abonnement.PrenomClient, Abonnement.MailClient,
 		Client.BlackListe
 	from Abonnement
-	left outer join RelanceDecouvert
-	on Abonnement.Id = RelanceDecouvert.AbonnementId
 	inner join Client 
 	on Abonnement.NomClient = Client.Nom
 	and Abonnement.PrenomClient = Client.Prenom
 	and Abonnement.MailClient = Client.Mail
 
-EXEC relance_sur_découvert
+EXEC echeance_prochaine_abonnement
+	@DateDiff = 5
 
 PRINT 'Apres execution'
-select RelanceDecouvert.AbonnementId, RelanceDecouvert.Date, RelanceDecouvert.Niveau, 
-		Abonnement.Id, 
-		Abonnement.NomClient, Abonnement.PrenomClient, Abonnement.MailClient, Abonnement.Solde,
-		Client.BlackListe
-	from Abonnement
-	left outer join RelanceDecouvert
-	on Abonnement.Id = RelanceDecouvert.AbonnementId
-	inner join Client 
-	on Abonnement.NomClient = Client.Nom
-	and Abonnement.PrenomClient = Client.Prenom
-	and Abonnement.MailClient = Client.Mail
 
 EXEC _Vide_BD

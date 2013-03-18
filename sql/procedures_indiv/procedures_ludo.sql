@@ -144,8 +144,14 @@ BEGIN
 	DECLARE @id_abonnement INT
 	DECLARE @dateFIN DATETIME 
 	DECLARE AbonementFin CURSOR FOR
-		SELECT Id,DateFin FROM Abonnement
-		WHERE (DateFin - CURRENT_TIMESTAMP) < @DateDiff and (DateFin - CURRENT_TIMESTAMP) > 0
+		SELECT Abonnement.Id, Abonnement.DateFin FROM Abonnement
+		inner join Client
+		on Abonnement.NomClient = Client.Nom
+		and Abonnement.PrenomClient = Client.Prenom
+		and Abonnement.MailClient = Client.Mail
+		WHERE DATEDIFF(day, CURRENT_TIMESTAMP, DateFin) < @DateDiff 
+			and DATEDIFF(day, CURRENT_TIMESTAMP, DateFin) > 0
+			and Client.BlackListe = 0
 	OPEN AbonementFin
 	FETCH NEXT FROM AbonementFin
 		INTO @id_abonnement, @dateFIN
