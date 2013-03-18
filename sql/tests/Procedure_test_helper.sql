@@ -124,9 +124,9 @@ GO
 CREATE PROCEDURE  [dbo].[_Ajout_Type_Abonnement]
 AS 
 BEGIN
-	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement],[estdispo]) VALUES (N'Basic', CAST(10.0000 AS SmallMoney), CAST(1.0000 AS SmallMoney), 2, 2, CAST(10.0000 AS SmallMoney), 31,0)
-	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement],[estdispo]) VALUES (N'Basic évolué', CAST(40.0000 AS SmallMoney), CAST(0.5000 AS SmallMoney), 5, 4, CAST(10.0000 AS SmallMoney), 360,0)
-	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement],[estdispo]) VALUES (N'Classic', CAST(20.0000 AS SmallMoney), CAST(1.0000 AS SmallMoney), 10, 4, CAST(10.0000 AS SmallMoney), 31,0)
+	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement],[estdispo]) VALUES (N'Basic', CAST(10.0000 AS SmallMoney), CAST(1.0000 AS SmallMoney), 2, 2, CAST(10.0000 AS SmallMoney), 31,1)
+	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement],[estdispo]) VALUES (N'Basic évolué', CAST(40.0000 AS SmallMoney), CAST(0.5000 AS SmallMoney), 5, 4, CAST(10.0000 AS SmallMoney), 360,1)
+	INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement],[estdispo]) VALUES (N'Classic', CAST(20.0000 AS SmallMoney), CAST(1.0000 AS SmallMoney), 10, 4, CAST(10.0000 AS SmallMoney), 31,1)
 END
 GO
 
