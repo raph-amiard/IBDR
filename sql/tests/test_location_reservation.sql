@@ -1,6 +1,7 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
 /* Auteurs  : AMIARD Raphaël - SAR                                             */
+/* Debug    : GOUYOU Ludovic - TA                                              */
 ---------------------------------------------------------------------------------
 USE IBDR_SAR
 GO
@@ -65,13 +66,6 @@ SET @dateDebut = CURRENT_TIMESTAMP +1
 Declare @dateFin DATE
 SET @dateFin = DATEADD(week, 10, CURRENT_TIMESTAMP)
 SELECT @dateDebut, @dateFin
-EXEC dbo.abonnement_creer
-	@DateDebut =  @dateDebut,
-	@DateFin = @dateFin,
-	@NomClient =  'JEAN',
-	@PrenomClient = 'David',
-	@MailClient = 'JEAN.David@yahoo.fr' ,
-	@TypeAbonnement = 'Classic'
 
 DECLARE @date_fin_loc DATETIME
 DECLARE @date_debut_res_1 DATETIME
@@ -79,7 +73,7 @@ DECLARE @date_debut_res_2 DATETIME
 DECLARE @date_debut_res_3 DATETIME
 DECLARE @date_fin_res_1 DATETIME
 DECLARE @id_abonnement INT
-SELECT @id_abonnement = @@identity
+SELECT @id_abonnement = 1
 SELECT @date_fin_loc = DATEADD(day, 2, CURRENT_TIMESTAMP)
 SELECT @date_debut_res_1 = DATEADD(day, 1, CURRENT_TIMESTAMP)
 SELECT @date_debut_res_2 = DATEADD(day, 5, CURRENT_TIMESTAMP)
