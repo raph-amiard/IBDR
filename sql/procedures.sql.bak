@@ -2499,10 +2499,9 @@ AS
 BEGIN  
 	IF EXISTS (	SELECT * FROM Abonnement WHERE Abonnement.TypeAbonnement =@Nom)
 	BEGIN
-	PRINT 'Il esxiste un abonnement utilisant ce type d''abonnement mise à jour du flag'
+	RAISERROR('ce type  ne peux pas etre supprimé ', 9, 1);
 	UPDATE dbo.TypeAbonnement 
 	SET dbo.TypeAbonnement.estdispo = 0
-	WHERE @Nom=Nom
 	END 
 	 
 	ELSE
@@ -2514,7 +2513,26 @@ BEGIN
 END
 GO
 
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de supression d'un abonnement           */
+/* Auteur  : RAHMOUN Imane - SAR                     */
+/* Testeur : RAHMOUN Imane - SAR                     */
+-------------------------------------------------------
+IF OBJECT_ID ( 'dbo.abonnement_supprimer', 'P' ) IS NOT NULL 
+    DROP PROCEDURE dbo.abonnement_supprimer;
+GO
+CREATE PROCEDURE [dbo].[abonnement_supprimer]
+@Id INT 
+AS 
+BEGIN  
 
+	DELETE dbo.Abonnement 
+	FROM dbo.Abonnement 
+	WHERE @Id=Id
+
+END
+Go
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Procédure de modification d'un type d'abonnement    */
@@ -2524,7 +2542,7 @@ GO
 IF OBJECT_ID ( 'dbo.typeAbonnement_modifier', 'P' ) IS NOT NULL 
     DROP PROCEDURE dbo.typeAbonnement_modifier;
 GO
-CREATE PROCEDURE [dbo].[typeAbonnement_modifier]
+    CREATE PROCEDURE [dbo].[dbo.typeAbonnement_modifier]
 	@Nom NVARCHAR(32) ,
 	@PrixMensuel SMALLMONEY ,
 	@PrixLocation SMALLMONEY ,
@@ -2538,14 +2556,15 @@ IF EXISTS (SELECT * FROM TypeAbonnement WHERE  TypeAbonnement.Nom =@Nom)
 BEGIN 
 UPDATE TypeAbonnement 
 SET 
-	TypeAbonnement.PrixMensuel= @PrixMensuel,
-	TypeAbonnement.Prixlocation = @Prixlocation,
-	TypeAbonnement.MaxJoursLocation = @MaxJoursLocation,
-	TypeAbonnement.NbMaxLocations = @NbMaxLocations,
-	TypeAbonnement.PrixRetard = @PrixRetard,
-	TypeAbonnement.DureeEngagement = @DureeEngagement 
+TypeAbonnement.Nom = @Nom,
+TypeAbonnement.PrixMensuel= @PrixMensuel,
+TypeAbonnement.Prixlocation = @Prixlocation,
+TypeAbonnement.MaxJoursLocation = @MaxJoursLocation,
+TypeAbonnement.NbMaxLocations = @NbMaxLocations,
+TypeAbonnement.PrixRetard = @PrixRetard,
+TypeAbonnement.DureeEngagement = @DureeEngagement 
 WHERE 
-	TypeAbonnement.Nom =@Nom
+TypeAbonnement.Nom =@Nom
 END
 ELSE 
 BEGIN

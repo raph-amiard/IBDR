@@ -1,38 +1,42 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
-/* Auteurs  : RAHMMOUN Imane - SAR											  */
+/* Auteurs  : RAHMMOUN Imane - SAR , GOUYOUY Ludovic - TA					  */
 ---------------------------------------------------------------------------------
 USE IBDR_SAR
 GO
 
 EXEC _Vide_BD
-EXEC type_abonnement_creer
+EXEC _Ajout_Abonnement
 PRINT 'Avant execution'
+INSERT INTO [dbo].[TypeAbonnement] ([Nom], [PrixMensuel], [PrixLocation], [MaxJoursLocation], [NbMaxLocations], [PrixRetard], [DureeEngagement],[estdispo]) VALUES (N'ClassicNew', CAST(20.0000 AS SmallMoney), CAST(1.0000 AS SmallMoney), 10, 4, CAST(10.0000 AS SmallMoney), 31,1)
 
-select * from TypeAbonnement
 
-BEGIN TRY
-	EXEC type_abonnement_creer 
-		@Nom = 'Complet' ,
-		@PrixMensuel = 100 ,
-		@PrixLocation =0.05 ,
-		@MaxJoursLocation = 5 ,
-		@NbMaxLocations = 10 ,
-		@PrixRetard = 5 ,
-		@DureeEngagement = 720 
-END TRY
-BEGIN CATCH
-	PRINT 'ERREUR : ' + CONVERT (varchar, ERROR_NUMBER()) + ' : ' + ERROR_MESSAGE();
-END CATCH
+select TypeAbonnement.Nom, TypeAbonnement.estdispo, Abonnement.Id, Abonnement.NomClient, Abonnement.PrenomClient 
+	from TypeAbonnement 
+	left outer join Abonnement 
+	on TypeAbonnement.Nom = Abonnement.TypeAbonnement
 
 BEGIN TRY
 	EXEC type_abonnement_supprimer 
-	@Nom = 'Complet' 
+	@Nom = 'Classic' 
 	END TRY
 BEGIN CATCH
 	PRINT 'ERREUR : ' + CONVERT (varchar, ERROR_NUMBER()) + ' : ' + ERROR_MESSAGE();
 END CATCH
 PRINT ' '
+
+BEGIN TRY
+	EXEC type_abonnement_supprimer 
+	@Nom = 'ClassicNew' 
+	END TRY
+BEGIN CATCH
+	PRINT 'ERREUR : ' + CONVERT (varchar, ERROR_NUMBER()) + ' : ' + ERROR_MESSAGE();
+END CATCH
+PRINT ' '
+
 PRINT 'Fin Test'
-select * from TypeAbonnement
+select TypeAbonnement.Nom, TypeAbonnement.estdispo, Abonnement.Id, Abonnement.NomClient, Abonnement.PrenomClient 
+	from TypeAbonnement 
+	left outer join Abonnement 
+	on TypeAbonnement.Nom = Abonnement.TypeAbonnement
 EXEC _Vide_BD
