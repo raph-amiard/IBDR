@@ -2782,6 +2782,7 @@ BEGIN
 	CLOSE AbonementFin
 	DEALLOCATE AbonementFin
 END
+GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
@@ -2789,7 +2790,7 @@ END
 /* Auteur  : AMIARD Raphaël - SAR                    */
 /* Testeur : AMIARD Raphaël - SAR                    */
 -------------------------------------------------------
-IF (OBJECT_ID('dbo.V_FILMSTOCKS') IS NOT NULL)
+IF (OBJECT_ID('dbo.V_FILMSTOCKS', 'V') IS NOT NULL)
   DROP VIEW dbo.V_FILMSTOCKS
 GO
 CREATE VIEW dbo.V_FILMSTOCKS
@@ -2830,7 +2831,7 @@ GO
 /* Auteur  : AMIARD Raphaël - SAR                    */
 /* Testeur : AMIARD Raphaël - SAR                    */
 -------------------------------------------------------
-IF (OBJECT_ID('dbo.location_rendre') IS NOT NULL)
+IF (OBJECT_ID('dbo.location_rendre', 'P' ) IS NOT NULL)
   DROP PROCEDURE dbo.location_rendre
 GO
 CREATE PROCEDURE dbo.location_rendre(@id_filmstock INT)
@@ -2870,7 +2871,7 @@ GO
 /* Auteur  : AMIARD Raphaël - SAR                    */
 /* Testeur : AMIARD Raphaël - SAR                    */
 -------------------------------------------------------
-IF (OBJECT_ID('dbo._ajouter_location') IS NOT NULL)
+IF (OBJECT_ID('dbo._ajouter_location', 'P' ) IS NOT NULL)
   DROP PROCEDURE dbo._ajouter_location
 GO
 CREATE PROCEDURE dbo._ajouter_location (
@@ -2963,7 +2964,7 @@ GO
 /* Auteur  : AMIARD Raphaël - SAR                    */
 /* Testeur : AMIARD Raphaël - SAR                    */
 -------------------------------------------------------
-IF (OBJECT_ID('dbo.location_confirmer') IS NOT NULL)
+IF (OBJECT_ID('dbo.location_confirmer', 'P' ) IS NOT NULL)
   DROP PROCEDURE dbo.location_confirmer
 GO
 CREATE PROCEDURE dbo.location_confirmer(@id_location INT)
@@ -2989,7 +2990,7 @@ GO
 /* Auteur  : AMIARD Raphaël - SAR                    */
 /* Testeur : AMIARD Raphaël - SAR                    */
 -------------------------------------------------------
-IF (OBJECT_ID('dbo.location_ajouter') IS NOT NULL)
+IF (OBJECT_ID('dbo.location_ajouter', 'P' ) IS NOT NULL)
   DROP PROCEDURE dbo.location_ajouter
 GO
 CREATE PROCEDURE dbo.location_ajouter (
