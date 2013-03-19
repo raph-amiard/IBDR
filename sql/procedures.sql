@@ -962,7 +962,7 @@ BEGIN
 					   ,0)
 		
 			SET @Nombre -= 1	
-			PRINT 'Uun exemplaire a été ajouté!'				  
+			PRINT 'Un exemplaire a été ajouté!'				  
 		END				   
    END
    ELSE
@@ -999,6 +999,7 @@ BEGIN
 		END
 	ELSE
 		BEGIN
+			UPDATE FilmStock SET Supprimer = 1 WHERE ID = @ID_FilmStock
 			RAISERROR('l''exempliare ne peut pas être supprimer, car il est loué!', 11, 1);
 		END
 END
