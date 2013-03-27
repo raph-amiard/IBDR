@@ -541,3 +541,13 @@ CREATE TABLE Succursales (
 	SiegeSocial		   BIT NOT NULL
 	CONSTRAINT PK_SUCCURSALES PRIMARY KEY ( ID )
 )
+
+IF EXISTS  (SELECT 1 FROM sysobjects WHERE name = 'Listenoire' AND xtype = 'U')  
+DROP TABLE Listenoire ;
+CREATE TABLE Listenoire (
+	NomClient               NVARCHAR(64) NOT NULL,
+	PrenomClient            NVARCHAR(64) NOT NULL,
+	MailClient              NVARCHAR(128) NOT NULL,
+
+	CONSTRAINT PK_LISTENOIRE PRIMARY KEY ( NomClient, PrenomClient, MailClient )
+)
