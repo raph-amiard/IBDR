@@ -1,6 +1,8 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
-/* Test de la procedure pour ajouter un ensemble d'exemplaires (FilmStock)     */
+/* Test de la procedure pour ajouter une Edition                               */
+/* ROLLBACK : Une langue qui n'existe pas est défini dans une édition          */
+/*                                                                             */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
 ---------------------------------------------------------------------------------
@@ -12,7 +14,7 @@ GO
 EXEC _Vide_BD
 
 /** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT * FROM FilmStock
+SELECT e.NomEdition, ee.NomEditeur FROM Edition e inner join EditeurEdition ee ON e.Id = ee.IdEdition
 
 /** Ajouter données necessaires **/
 
@@ -28,7 +30,9 @@ INSERT INTO Film
            ,convert(smallint,'1971')
            ,'Portugais'
            ,'À l’époque de l’épisode de la France Antarctique et dans le contexte des affrontements au xvi siècle entre Français et Portugais pour la colonisation du Brésil, le film raconte l’histoire d’un jeune Français recueilli par une tribu cannibale Tupinambas...')
+GO
 
+/** Exécution de la procedure **/
 EXEC dbo.edition_creer 
 		@FilmTitreVF = 'Qu''il était bon mon petit français',
 		@FilmAnneeSortie = '1971',
@@ -40,19 +44,9 @@ EXEC dbo.edition_creer
 		@NomEdition = 'Box Edition',
 		@AgeInterdiction = 18,
 		@ListEditeurs = '|Globo Filmes|Condor Filmes|',
-		@ListLangueAudio = '|Portugais|',
-		@ListLangueSousTitres = '|Portugais|'
-
-/** Exécution de la procedure **/
-DECLARE @ID_EDITION INT
-SELECT @ID_EDITION = ID FROM  Edition WHERE NomEdition = 'Box Edition'
-
-EXEC dbo.filmstock_ajouter
-	@DateArrivee = '01/04/2013 10:00:00:000', -- dd/mon/yyyy hh:mi:ss:mmm(24h)
-	@Usure  = 0,
-	@IdEdition = @ID_EDITION,
-	@Nombre = 3
+		@ListLangueAudio = '|Portuga|',
+		@ListLangueSousTitres = '|Portugais|Français|Anglais|'
 		
 /** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT * FROM FilmStock
+SELECT ee.NomEditeur, e.NomEdition, e.FilmTitreVF, e.FilmAnneeSortie FROM Edition e inner join EditeurEdition ee ON e.Id = ee.IdEdition
 GO

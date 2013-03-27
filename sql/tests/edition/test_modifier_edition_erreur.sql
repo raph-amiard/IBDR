@@ -1,8 +1,7 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
-/* Test de la procedure pour mettre à jour les langues d'une Edition           */
-/* 1- Supprimer langues (Audio et Sous-Titres)                                 */
-/* 2- Ajoueter langues (Audio et Sous-Titres)                                  */
+/* Test de la procedure pour mettre à jour tous les attributs d'une Edition    */
+/* ERREUR : Existe déjà une edition avec ce nom                                */
 /*                                                                             */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
@@ -34,7 +33,7 @@ EXEC dbo.edition_creer
 		@Duree = '01:24:00',
 		@DateSortie = '20/02/2011',
 		@Support = 'DVD',
-		@Couleur = 1,
+		@Couleur = 0,
 		@Pays = 'Brésil',
 		@NomEdition = 'Box Edition',
 		@AgeInterdiction = 18,
@@ -45,39 +44,52 @@ EXEC dbo.edition_creer
 DECLARE @ID_EDITION INT
 SELECT @ID_EDITION = ID FROM  Edition WHERE NomEdition = 'Box Edition'
 
+EXEC dbo.edition_creer 
+		@FilmTitreVF = 'Qu''il était bon mon petit français',
+		@FilmAnneeSortie = '1971',
+		@Duree = '01:24:00',
+		@DateSortie = '20/02/2011',
+		@Support = 'DVD',
+		@Couleur = 0,
+		@Pays = 'Brésil',
+		@NomEdition = 'Box Special Edition',
+		@AgeInterdiction = 18,
+		@ListEditeurs = '|Globo Filmes|Condor Filmes|',
+		@ListLangueAudio = '|Portugais|Français|',
+		@ListLangueSousTitres = '|Portugais|Français|Anglais|'
 
 /** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT e.NomEdition, eda.NomLangue AS LangueAudio FROM Edition e inner join EditionLangueAudio eda ON e.Id = eda.IdEdition
-
-SELECT e.NomEdition, eds.NomLangue AS LangueSousTitres FROM Edition e inner join EditionLangueSousTitres eds ON e.Id = eds.IdEdition
+SELECT * FROM Edition
 
 /** Exécution de la procedure **/
-EXEC dbo.edition_supprimer_langue_audio
+EXEC dbo.edition_modifier_nom
 	@ID_Edition = @ID_EDITION,
-	@LangueAudio = 'Français'
+	@NomEdition = 'Box Special Edition'
 
-EXEC dbo.edition_supprimer_langue_sous_titres
+EXEC  dbo.edition_modifier_duree
 	@ID_Edition = @ID_EDITION,
-	@LangueSousTitres = 'Anglais'
+	@Duree = '01:54:00'
+	
+EXEC dbo.edition_modifier_date_sortie
+	@ID_Edition = @ID_EDITION,
+	@DateSortie = '25/02/2012'
+
+EXEC dbo.edition_modifier_support
+	@ID_Edition = @ID_EDITION,
+	@Support = 'Blu-ray'
+	
+EXEC dbo.edition_modifier_couleur
+	@ID_Edition = @ID_EDITION,
+	@Couleur = 1
+
+EXEC dbo.edition_modifier_pays
+	@ID_Edition = @ID_EDITION,
+	@Pays = 'France'
+		
+EXEC dbo.edition_modifier_age_interdiction
+	@ID_Edition = @ID_EDITION,
+	@AgeInterdiction = 12
 	
 /** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT e.NomEdition, eda.NomLangue AS LangueAudio FROM Edition e inner join EditionLangueAudio eda ON e.Id = eda.IdEdition
-
-SELECT e.NomEdition, eds.NomLangue AS LangueSousTitres FROM Edition e inner join EditionLangueSousTitres eds ON e.Id = eds.IdEdition
-
-
-/** Exécution de la procedure **/
-EXEC dbo.edition_ajouter_langue_audio
-	@ID_Edition = @ID_EDITION,
-	@LangueAudio = 'Chinois'
-
-EXEC dbo.edition_ajouter_langue_sous_titres
-	@ID_Edition = @ID_EDITION,
-	@LangueSousTitres = 'Chinois'
-	
-/** L'état de la base données par rapport les tables qui ont été modifiés **/
-SELECT e.NomEdition, eda.NomLangue AS LangueAudio FROM Edition e inner join EditionLangueAudio eda ON e.Id = eda.IdEdition
-
-SELECT e.NomEdition, eds.NomLangue AS LangueSousTitres FROM Edition e inner join EditionLangueSousTitres eds ON e.Id = eds.IdEdition
-
+SELECT * FROM Edition
 

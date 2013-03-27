@@ -820,7 +820,7 @@ BEGIN
 		END
 		ELSE
 		BEGIN
-			RAISERROR('Impossible supprimer, car il faut moins un editeur!', 11, 1);
+			RAISERROR('Impossible supprimer, car il faut au moins un editeur!', 11, 1);
 		END
 	END
 	ELSE
@@ -3026,4 +3026,271 @@ AS
 BEGIN
     EXEC dbo._ajouter_location @id_abonnement, @id_edition, @date_debut, @date_fin, 0
 END
+GO
+
+--------------------------------------------------
+/* IBDR 2013 - Groupe SAR                       */
+/* Procedure pour ajouter une Edition           */
+/* Sans rollback!                               */
+/* Auteur  : MUNOZ Yupanqui - SAR               */
+/* Testeur : MUNOZ Yupanqui - SAR               */
+--------------------------------------------------
+IF (OBJECT_ID('dbo.edition_creer_sans_rollback') IS NOT NULL)
+  DROP PROCEDURE dbo.edition_creer_sans_rollback 
+GO
+CREATE PROCEDURE dbo.edition_creer_sans_rollback 
+	@FilmTitreVF NVARCHAR(128),
+	@FilmAnneeSortie NVARCHAR(5),
+	@Duree NVARCHAR(9),
+	@DateSortie NVARCHAR(11),
+	@Support NVARCHAR(32),
+	@Couleur BIT,
+	@Pays NVARCHAR(64),
+	@NomEdition NVARCHAR(256),
+	@AgeInterdiction INT,
+	@ListEditeurs NVARCHAR(640),
+	@ListLangueAudio NVARCHAR(640),
+	@ListLangueSousTitres NVARCHAR(640)
+	
+
+AS
+BEGIN
+
+	IF NOT EXISTS (SELECT *	FROM Film WHERE TitreVF = @FilmTitreVF AND AnneeSortie = @FilmAnneeSortie )
+	BEGIN
+		RAISERROR('Ce film n''existe pas dans la base donnée!', 11, 1);
+		RETURN
+	END
+	
+	IF @NomEdition = '' OR @NomEdition = ' '
+	BEGIN
+		RAISERROR('Le nom d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
+	IF EXISTS (SELECT * FROM Edition WHERE NomEdition = @NomEdition)
+	BEGIN
+		RAISERROR('Existe déjà une edition avec ce nom!', 11, 1);
+		RETURN
+	END
+	
+	IF @Duree = '' OR @Duree = ' '
+	BEGIN
+		RAISERROR('La duree d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
+	IF @DateSortie = '' OR @DateSortie = ' '
+	BEGIN
+		RAISERROR('La date de sortie d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
+	IF @Support = '' OR @Support = ' '
+	BEGIN
+		RAISERROR('Le support d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+
+	IF NOT EXISTS (SELECT *	FROM Pays WHERE Nom = @Pays )
+	BEGIN
+		RAISERROR('Ce pays n''existe pas dans la base donnée!', 11, 1);
+		RETURN
+	END
+	
+	IF @AgeInterdiction = '' OR @AgeInterdiction = ' '
+	BEGIN
+		RAISERROR('L''age d''interdiction d''edition ne peut pas être vide!', 11, 1);
+		RETURN
+	END
+	
+    DECLARE @vide INT
+    SET @vide = 1
+    
+    /** Vérifier s'il y a 'Editeur' **/
+    IF CHARINDEX('|', @ListEditeurs) = 0
+	BEGIN
+		RAISERROR('Il faut ajouter au moins un editeur pour ajouter une edition!', 11, 1);
+		SET @vide = 0
+		RETURN
+	END
+	IF CHARINDEX('|',@ListEditeurs) <> 1
+	BEGIN
+		SET @ListEditeurs = '|' + @ListEditeurs
+	END
+
+	IF CHARINDEX('|',@ListEditeurs, len(@ListEditeurs)) = 0
+	BEGIN
+		SET @ListEditeurs = @ListEditeurs +'|'
+	END
+	
+	/** Vérifier s'il y a 'LangueAudio' **/
+	IF CHARINDEX('|', @ListEditeurs) = 0
+	BEGIN
+		RAISERROR('Il faut ajouter au moins une langue d''audio pour ajouter une edition!', 11, 1);
+		SET @vide = 0
+		RETURN
+	END
+	IF CHARINDEX('|',@ListLangueAudio) <> 1
+	BEGIN
+		SET @ListLangueAudio = '|' + @ListLangueAudio
+	END
+
+	IF CHARINDEX('|',@ListLangueAudio, len(@ListLangueAudio)) = 0
+	BEGIN
+		SET @ListLangueAudio = @ListLangueAudio +'|'
+	END
+	
+	/** Vérifier s'il y a 'LangueSousTitres' **/
+	IF CHARINDEX('|', @ListLangueSousTitres) = 0
+	BEGIN
+		RAISERROR('Il faut ajouter au moins une langue de sous-titres pour ajouter une edition!', 11, 1);
+		SET @vide = 0
+		RETURN
+	END
+	IF CHARINDEX('|',@ListLangueSousTitres) <> 1
+	BEGIN
+		SET @ListLangueSousTitres = '|' + @ListLangueSousTitres
+	END
+
+	IF CHARINDEX('|',@ListLangueSousTitres, len(@ListLangueSousTitres)) = 0
+	BEGIN
+		SET @ListLangueSousTitres = @ListLangueSousTitres +'|'
+	END
+	
+	DECLARE @ID_Edition INT
+	DECLARE @ERROR_LANGUE INT
+	DECLARE @ROWCOUNT INT
+	SET @ROWCOUNT = 0
+	
+	BEGIN TRAN ADD_EDITION
+		IF (@vide=1)
+		BEGIN 
+			INSERT INTO Edition
+					   (FilmTitreVF
+					   ,FilmAnneeSortie
+					   ,Duree
+					   ,DateSortie
+					   ,Support
+					   ,Couleur
+					   ,Pays
+					   ,NomEdition
+					   ,AgeInterdiction
+					   , Supprimer)
+				 VALUES
+						(@FilmTitreVF,
+						convert(smallint,@FilmAnneeSortie),
+						convert(time,@Duree,108),
+						convert(date,@DateSortie,103),
+						@Support,
+						@Couleur,
+						@Pays,
+						@NomEdition,
+						@AgeInterdiction,
+						0)
+			
+			
+			SET @ROWCOUNT = @@ROWCOUNT
+			
+			IF (@ROWCOUNT = 1)
+			BEGIN
+				SET @ID_Edition = @@IDENTITY
+			END
+		END
+		
+		DECLARE @index INT, @fin INT
+		SET @index = 1
+		
+		WHILE @index <> LEN(@ListEditeurs) AND @vide=1 AND @ROWCOUNT = 1
+		BEGIN
+			DECLARE @NomEditeur NVARCHAR(64)
+			
+			SET @fin = CHARINDEX('|', @ListEditeurs, @index+1)
+			
+			SET @NomEditeur = LTRIM(SUBSTRING(@ListEditeurs , @index+1, @fin - @index-1))
+			
+			IF NOT EXISTS (SELECT *
+					FROM Editeur
+					WHERE Nom = @NomEditeur)
+			BEGIN
+
+				INSERT INTO Editeur
+						   (Nom)
+					 VALUES
+						   (@NomEditeur)
+				
+				PRINT 'Editeur "' + cast(@NomEditeur AS NVARCHAR) +'" ajouté!'
+			END
+
+			INSERT INTO EditeurEdition
+					   (IdEdition
+					   ,NomEditeur)
+				 VALUES
+					   (@ID_Edition
+					   ,@NomEditeur)
+			
+			SET @index = @fin
+			
+		END
+			
+		SET @index = 1
+		
+		WHILE @index <> LEN(@ListLangueAudio) AND @vide=1 AND @ROWCOUNT = 1
+		BEGIN
+			DECLARE @LangueAudio NVARCHAR(64)
+			
+			SET @fin = CHARINDEX('|', @ListLangueAudio, @index+1)
+			
+			SET @LangueAudio = LTRIM(SUBSTRING(@ListLangueAudio , @index+1, @fin - @index-1))
+			
+			BEGIN TRY 
+				INSERT INTO EditionLangueAudio
+						   (IdEdition
+						   ,NomLangue)
+					 VALUES
+						   (@ID_Edition
+						   ,@LangueAudio)
+			END TRY
+			BEGIN CATCH		
+				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 11, 1);
+				--ROLLBACK TRAN ADD_EDITION
+				--RETURN
+			END CATCH
+					   
+			SET @index = @fin
+			
+		END
+		
+		SET @index = 1
+		
+		WHILE @index <> LEN(@ListLangueSousTitres) AND @vide=1 AND @ROWCOUNT = 1
+		BEGIN
+			DECLARE @LangueSousTitres NVARCHAR(64)
+			
+			SET @fin = CHARINDEX('|', @ListLangueSousTitres, @index+1)
+			
+			SET @LangueSousTitres = LTRIM(SUBSTRING(@ListLangueSousTitres , @index+1, @fin - @index-1))
+			
+			BEGIN TRY
+				INSERT INTO EditionLangueSousTitres
+					   (IdEdition
+					   ,NomLangue)
+				 VALUES
+					   (@ID_Edition
+					   ,@LangueSousTitres)
+				
+			END TRY
+			BEGIN CATCH		
+				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 11, 1);
+				--ROLLBACK TRAN ADD_EDITION
+				--RETURN
+			END CATCH
+			
+			SET @index = @fin
+			
+		END
+	
+	COMMIT TRAN ADD_EDITION
+	PRINT 'Edition "' + cast(@NomEdition AS NVARCHAR) +'" ajoutée!'
+END			
 GO

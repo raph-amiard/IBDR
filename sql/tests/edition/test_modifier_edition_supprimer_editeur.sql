@@ -1,9 +1,7 @@
 ---------------------------------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                                                      */
 /* Test de la procedure pour mettre à jour l'editeur d'une Edition             */
-/* 1- Supprimer editeur                                                        */
-/* 2- Ajoueter editeur                                                         */
-/* 3- Modidier editeur                                                         */
+/* - Supprimer editeur                                                         */
 /*                                                                             */
 /* Auteur  : MUNOZ Yupanqui - SAR                                              */
 /* Testeur : MUNOZ Yupanqui - SAR                                              */
@@ -54,21 +52,5 @@ EXEC dbo.edition_supprimer_editeur
 	@ID_Edition = @ID_EDITION,
 	@NomEditeur = 'Globo Filmes'
 	
-/** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT ee.NomEditeur, e.NomEdition FROM Edition e inner join EditeurEdition ee ON e.Id = ee.IdEdition
-
-/** Exécution de la procedure **/
-EXEC dbo.edition_ajouter_editeur
-	@ID_Edition = @ID_EDITION,
-	@NomEditeur = 'Farol-de'
-	
-/** L'état de la base données par rapport les tables qui seront modifiés **/
-SELECT ee.NomEditeur, e.NomEdition FROM Edition e inner join EditeurEdition ee ON e.Id = ee.IdEdition
-
-/** Exécution de la procedure **/
-EXEC dbo.editeur_modifier
-	@NomEditeur = 'Farol-de',
-	@NomEditeurNouv = 'Farol-de-Dendê'
-	
-/** L'état de la base données par rapport les tables qui seront modifiés **/
+/** L'état de la base données par rapport les tables qui ont été modifiés **/
 SELECT ee.NomEditeur, e.NomEdition FROM Edition e inner join EditeurEdition ee ON e.Id = ee.IdEdition
