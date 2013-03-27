@@ -532,3 +532,12 @@ CREATE TABLE FilmProducteur (
 		FOREIGN KEY ( NomProducteur, PrenomProducteur, AliasProducteur )
 		REFERENCES Personne ( Nom, Prenom, Alias )
 )
+
+IF EXISTS  (SELECT 1 FROM sysobjects WHERE name = 'Succursales' AND xtype = 'U')  
+DROP TABLE Succursales;
+CREATE TABLE Succursales (
+	Id				   INTEGER IDENTITY(0, 1),
+	NomServeur		   NVARCHAR(512) NOT NULL,
+	SiegeSocial		   BIT NOT NULL
+	CONSTRAINT PK_SUCCURSALES PRIMARY KEY ( ID )
+)
