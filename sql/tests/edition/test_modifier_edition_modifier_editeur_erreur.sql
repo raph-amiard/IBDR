@@ -27,7 +27,20 @@ INSERT INTO Film
            ,convert(smallint,'1971')
            ,'Portugais'
            ,'À l’époque de l’épisode de la France Antarctique et dans le contexte des affrontements au xvi siècle entre Français et Portugais pour la colonisation du Brésil, le film raconte l’histoire d’un jeune Français recueilli par une tribu cannibale Tupinambas...')
-
+EXEC dbo.edition_creer 
+		@FilmTitreVF = 'Qu''il était bon mon petit français',
+		@FilmAnneeSortie = '1971',
+		@Duree = '01:24:00',
+		@DateSortie = '20/02/2011',
+		@Support = 'DVD',
+		@Couleur = 1,
+		@Pays = 'Brésil',
+		@NomEdition = 'Box Edition Special',
+		@AgeInterdiction = 18,
+		@ListEditeurs = '|Condor Filmes|',
+		@ListLangueAudio = '|Portugais|Français|',
+		@ListLangueSousTitres = '|Portugais|Français|Anglais|'
+		
 EXEC dbo.edition_creer 
 		@FilmTitreVF = 'Qu''il était bon mon petit français',
 		@FilmAnneeSortie = '1971',
@@ -38,7 +51,7 @@ EXEC dbo.edition_creer
 		@Pays = 'Brésil',
 		@NomEdition = 'Box Edition',
 		@AgeInterdiction = 18,
-		@ListEditeurs = '|Globo Filmes|Condor|',
+		@ListEditeurs = '|Condor|',
 		@ListLangueAudio = '|Portugais|Français|',
 		@ListLangueSousTitres = '|Portugais|Français|Anglais|'
 		
