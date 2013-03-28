@@ -65,7 +65,7 @@ INSERT INTO [dbo].[Location]
 	VALUES (1, 2, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP+10, NULL, 1, 1)
 INSERT INTO [dbo].[Location] 
 	([Id], [AbonnementId], [DateLocation], [DateRetourPrev], [DateRetourEff], [FilmStockId], [Confirmee]) 
-	VALUES (2, 1, CURRENT_TIMESTAMP-10, CURRENT_TIMESTAMP-1, NULL, 2, 1)
+	VALUES (2, 1, CURRENT_TIMESTAMP-10, CURRENT_TIMESTAMP+4, NULL, 2, 1)
 INSERT INTO [dbo].[Location] 
 	([Id], [AbonnementId], [DateLocation], [DateRetourPrev], [DateRetourEff], [FilmStockId], [Confirmee]) 
 	VALUES (5, 2, CURRENT_TIMESTAMP-10, CURRENT_TIMESTAMP-1, NULL, 5, 1)
@@ -80,34 +80,44 @@ SET IDENTITY_INSERT [dbo].[Location] OFF
 
 INSERT INTO [dbo].[RelanceRetard] ([Date], [LocationId], [Niveau]) VALUES (N'2013-03-18 22:01:21', 5, 5)
 
-PRINT 'Avant execution'
-select RelanceRetard.LocationId, RelanceRetard.Date, RelanceRetard.Niveau, 
-		Location.DateRetourPrev, Location.DateRetourEff, Location.AbonnementId, 
-		Abonnement.NomClient, Abonnement.PrenomClient, Abonnement.MailClient,
-		Client.BlackListe
-	from Location
-	left outer join RelanceRetard
-	on Location.Id = RelanceRetard.LocationId
-	inner join Abonnement
-	on Location.AbonnementId = Abonnement.Id
-	inner join Client 
-	on Abonnement.NomClient = Client.Nom
-	and Abonnement.PrenomClient = Client.Prenom
-	and Abonnement.MailClient = Client.Mail
-
 EXEC niveau_relance_sur_retard
 
-select Location.FilmStockId, Location.Id as LocationId, RelanceRetard.Date, RelanceRetard.Niveau, 
+SET IDENTITY_INSERT [dbo].[Location] ON
+INSERT INTO [dbo].[Location] 
+	([Id], [AbonnementId], [DateLocation], [DateRetourPrev], [DateRetourEff], [FilmStockId], [Confirmee]) 
+	VALUES (6, 1, CURRENT_TIMESTAMP+3, CURRENT_TIMESTAMP+10, NULL, 1, 0)
+INSERT INTO [dbo].[Location] 
+	([Id], [AbonnementId], [DateLocation], [DateRetourPrev], [DateRetourEff], [FilmStockId], [Confirmee]) 
+	VALUES (7, 2, CURRENT_TIMESTAMP+3, CURRENT_TIMESTAMP+10, NULL, 5, 0)
+SET IDENTITY_INSERT [dbo].[Location] OFF
+
+select distinct Location.FilmStockId, FilmStock.Supprimer, Location.Id as LocationId, 
 		Location.DateRetourPrev, Location.DateRetourEff, Location.AbonnementId, 
 		Abonnement.NomClient, Abonnement.PrenomClient, Abonnement.MailClient,
-		Client.BlackListe
+		Client.BlackListe, Client.Nom, Client.Prenom, Client.Mail
 	from Location
-	left outer join RelanceRetard
-	on Location.Id = RelanceRetard.LocationId
-	inner join Abonnement
+	left outer join FilmStock
+	on Location.FilmStockId = FilmStock.Id
+	right outer join Abonnement
 	on Location.AbonnementId = Abonnement.Id
-	inner join Client 
+	right outer join Client 
 	on Abonnement.NomClient = Client.Nom
 	and Abonnement.PrenomClient = Client.Prenom
 	and Abonnement.MailClient = Client.Mail
+
+exec nettoyage_Blacklist;
+select distinct Location.FilmStockId, FilmStock.Supprimer, Location.Id as LocationId, 
+		Location.DateRetourPrev, Location.DateRetourEff, Location.AbonnementId, 
+		Abonnement.NomClient, Abonnement.PrenomClient, Abonnement.MailClient,
+		Client.BlackListe, Client.Nom, Client.Prenom, Client.Mail
+	from Location
+	left outer join FilmStock
+	on Location.FilmStockId = FilmStock.Id
+	right outer join Abonnement
+	on Location.AbonnementId = Abonnement.Id
+	right outer join Client 
+	on Abonnement.NomClient = Client.Nom
+	and Abonnement.PrenomClient = Client.Prenom
+	and Abonnement.MailClient = Client.Mail
+	
 EXEC _Vide_BD

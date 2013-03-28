@@ -27,7 +27,7 @@ CREATE PROCEDURE dbo.edition_creer
 	@ListEditeurs NVARCHAR(640),
 	@ListLangueAudio NVARCHAR(640),
 	@ListLangueSousTitres NVARCHAR(640)
-	
+
 
 AS
 BEGIN
@@ -37,31 +37,31 @@ BEGIN
 		RAISERROR('Ce film n''existe pas dans la base donnée!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @NomEdition = '' OR @NomEdition = ' '
 	BEGIN
 		RAISERROR('Le nom d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF EXISTS (SELECT * FROM Edition WHERE NomEdition = @NomEdition)
 	BEGIN
 		RAISERROR('Existe déjà une edition avec ce nom!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @Duree = '' OR @Duree = ' '
 	BEGIN
 		RAISERROR('La duree d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @DateSortie = '' OR @DateSortie = ' '
 	BEGIN
 		RAISERROR('La date de sortie d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @Support = '' OR @Support = ' '
 	BEGIN
 		RAISERROR('Le support d''edition ne peut pas être vide!', 11, 1);
@@ -73,13 +73,13 @@ BEGIN
 		RAISERROR('Ce pays n''existe pas dans la base donnée!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @AgeInterdiction = '' OR @AgeInterdiction = ' '
 	BEGIN
 		RAISERROR('L''age d''interdiction d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
     DECLARE @vide INT
     SET @vide = 1
     
@@ -99,7 +99,7 @@ BEGIN
 	BEGIN
 		SET @ListEditeurs = @ListEditeurs +'|'
 	END
-	
+
 	/** Vérifier s'il y a 'LangueAudio' **/
 	IF CHARINDEX('|', @ListEditeurs) = 0
 	BEGIN
@@ -116,7 +116,7 @@ BEGIN
 	BEGIN
 		SET @ListLangueAudio = @ListLangueAudio +'|'
 	END
-	
+
 	/** Vérifier s'il y a 'LangueSousTitres' **/
 	IF CHARINDEX('|', @ListLangueSousTitres) = 0
 	BEGIN
@@ -133,12 +133,12 @@ BEGIN
 	BEGIN
 		SET @ListLangueSousTitres = @ListLangueSousTitres +'|'
 	END
-	
+
 	DECLARE @ID_Edition INT
 	DECLARE @ERROR_LANGUE INT
 	DECLARE @ROWCOUNT INT
 	SET @ROWCOUNT = 0
-	
+
 	BEGIN TRAN ADD_EDITION
 		IF (@vide=1)
 		BEGIN 
@@ -164,27 +164,27 @@ BEGIN
 						@NomEdition,
 						@AgeInterdiction,
 						0)
-			
-			
+
+
 			SET @ROWCOUNT = @@ROWCOUNT
-			
+
 			IF (@ROWCOUNT = 1)
 			BEGIN
 				SET @ID_Edition = @@IDENTITY
 			END
 		END
-		
+
 		DECLARE @index INT, @fin INT
 		SET @index = 1
-		
+
 		WHILE @index <> LEN(@ListEditeurs) AND @vide=1 AND @ROWCOUNT = 1
 		BEGIN
 			DECLARE @NomEditeur NVARCHAR(64)
-			
+
 			SET @fin = CHARINDEX('|', @ListEditeurs, @index+1)
-			
+
 			SET @NomEditeur = LTRIM(SUBSTRING(@ListEditeurs , @index+1, @fin - @index-1))
-			
+
 			IF NOT EXISTS (SELECT *
 					FROM Editeur
 					WHERE Nom = @NomEditeur)
@@ -194,7 +194,7 @@ BEGIN
 						   (Nom)
 					 VALUES
 						   (@NomEditeur)
-				
+
 				PRINT 'Editeur "' + cast(@NomEditeur AS NVARCHAR) +'" ajouté!'
 			END
 
@@ -204,21 +204,21 @@ BEGIN
 				 VALUES
 					   (@ID_Edition
 					   ,@NomEditeur)
-			
+
 			SET @index = @fin
-			
+
 		END
-			
+
 		SET @index = 1
-		
+
 		WHILE @index <> LEN(@ListLangueAudio) AND @vide=1 AND @ROWCOUNT = 1
 		BEGIN
 			DECLARE @LangueAudio NVARCHAR(64)
-			
+
 			SET @fin = CHARINDEX('|', @ListLangueAudio, @index+1)
-			
+
 			SET @LangueAudio = LTRIM(SUBSTRING(@ListLangueAudio , @index+1, @fin - @index-1))
-			
+
 			BEGIN TRY 
 				INSERT INTO EditionLangueAudio
 						   (IdEdition
@@ -232,21 +232,21 @@ BEGIN
 				ROLLBACK TRAN ADD_EDITION
 				RETURN
 			END CATCH
-					   
+
 			SET @index = @fin
-			
+
 		END
-		
+
 		SET @index = 1
-		
+
 		WHILE @index <> LEN(@ListLangueSousTitres) AND @vide=1 AND @ROWCOUNT = 1
 		BEGIN
 			DECLARE @LangueSousTitres NVARCHAR(64)
-			
+
 			SET @fin = CHARINDEX('|', @ListLangueSousTitres, @index+1)
-			
+
 			SET @LangueSousTitres = LTRIM(SUBSTRING(@ListLangueSousTitres , @index+1, @fin - @index-1))
-			
+
 			BEGIN TRY
 				INSERT INTO EditionLangueSousTitres
 					   (IdEdition
@@ -254,18 +254,18 @@ BEGIN
 				 VALUES
 					   (@ID_Edition
 					   ,@LangueSousTitres)
-				
+
 			END TRY
 			BEGIN CATCH		
 				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 11, 1);
 				ROLLBACK TRAN ADD_EDITION
 				RETURN
 			END CATCH
-			
+
 			SET @index = @fin
-			
+
 		END
-	
+
 	COMMIT TRAN ADD_EDITION
 	PRINT 'Edition "' + cast(@NomEdition AS NVARCHAR) +'" ajoutée!'
 END			
@@ -290,17 +290,17 @@ BEGIN
 		RAISERROR('Cette edition n''existe pas!', 11, 1);
 		RETURN
 	END
-	
+
     /**
     * Vérifier le nombre d'exemplaires (FilmStock) et le nombre d'exemplaires loués
     * et supprimer les exemplaire que ne sont pas loué
     **/
 	DECLARE @NombreFilmStock INT
 	SELECT @NombreFilmStock = COUNT(*) FROM FilmStock WHERE IdEdition = @ID_Edition
-	
+
 	DECLARE @NombreNonLocation INT
 	SET @NombreNonLocation = 0
-	
+
 	DECLARE @ID_FilmStock INT
 	DECLARE FilmStock CURSOR FOR
 		SELECT ID FROM FilmStock WHERE IdEdition = @ID_Edition
@@ -309,7 +309,7 @@ BEGIN
     	INTO @ID_FilmStock
     WHILE @@FETCH_STATUS = 0
     BEGIN
-		 		 
+
 		 IF NOT EXISTS (SELECT *
             			FROM Location
                         WHERE FilmStockId = @ID_FilmStock AND DateRetourEff IS NULL )
@@ -327,7 +327,7 @@ BEGIN
 		BEGIN
 			UPDATE FilmStock SET Supprimer = 1 WHERE ID = @ID_FilmStock	
 		END
-		
+
 		FETCH NEXT FROM FilmStock
     		INTO @ID_FilmStock
     END
@@ -349,11 +349,11 @@ BEGIN
 			BEGIN
 				BEGIN TRY
 					 DELETE FROM EditeurEdition WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
-					 
+
 					 IF NOT EXISTS (SELECT * FROM EditeurEdition WHERE NomEditeur = @NomEditeur)
 					BEGIN
 						DELETE FROM Editeur WHERE Nom = @NomEditeur
-						
+
 						PRINT 'Editeur "' + cast(@NomEditeur AS NVARCHAR) + '" supprimé!'
 					END
 				END TRY
@@ -362,13 +362,13 @@ BEGIN
 					ROLLBACK TRAN SUPP_EDITION
 					RETURN
 				END CATCH
-				
+
 				FETCH NEXT FROM Editeur
     				INTO @NomEditeur
 			END
 			CLOSE Editeur
 			DEALLOCATE Editeur
-		    
+
 		    BEGIN TRY
 				DELETE FROM Edition WHERE ID = @ID_Edition
 			END TRY
@@ -377,7 +377,7 @@ BEGIN
 				ROLLBACK TRAN SUPP_EDITION
 				RETURN
 			END CATCH
-			
+
 			PRINT 'Edition supprimée!'
 		COMMIT TRAN SUPP_EDITION
 	END
@@ -388,7 +388,7 @@ BEGIN
 	END
 END    
 GO
-	
+
 --------------------------------------------------
 /* IBDR 2013 - Groupe SAR                       */
 /* Procedure MAJ Nom de l'edition               */
@@ -408,15 +408,15 @@ BEGIN
 		RAISERROR('Le nom d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	DECLARE @ROWCOUNT INT
 	SET @ROWCOUNT = 0
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		UPDATE Edition SET NomEdition = @NomEdition WHERE ID = @ID_Edition
-		
+
 		SET @ROWCOUNT = @@ROWCOUNT
-		
+
 		IF (@ROWCOUNT = 1)
 		BEGIN
 			PRINT 'Mis à jour le nom!'
@@ -452,7 +452,7 @@ BEGIN
 		RAISERROR('La duree d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		UPDATE Edition SET Duree = @Duree WHERE ID = @ID_Edition
@@ -484,7 +484,7 @@ BEGIN
 		RAISERROR('La date de sortie d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		UPDATE Edition SET DateSortie = convert(date,@DateSortie,103)WHERE ID = @ID_Edition
@@ -516,7 +516,7 @@ BEGIN
 		RAISERROR('Le support d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF EXISTS (SELECT * FROM Edition  WHERE ID = @ID_Edition)
 	BEGIN
 		UPDATE Edition SET Support = @Support WHERE ID = @ID_Edition
@@ -607,7 +607,7 @@ BEGIN
 		RAISERROR('L''age d''interdiction d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		UPDATE Edition SET AgeInterdiction = @AgeInterdiction WHERE ID = @ID_Edition
@@ -789,12 +789,12 @@ BEGIN
 		RAISERROR('Cet editieur n''existe pas!', 11, 1);
 		RETURN
 	END
-	
+
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		DECLARE @NombreEditeurs INT
 		SELECT @NombreEditeurs = COUNT(*) FROM EditeurEdition WHERE IdEdition = @ID_Edition
-		
+
 		IF (@NombreEditeurs > 1)
 		BEGIN
 			DECLARE @Editeur NVARCHAR(64)
@@ -806,13 +806,13 @@ BEGIN
 			WHILE @@FETCH_STATUS = 0
 			BEGIN
 				 DELETE FROM EditeurEdition WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
-				 
+
 				 IF NOT EXISTS (SELECT * FROM EditeurEdition WHERE NomEditeur = @NomEditeur)
 				BEGIN
 					DELETE FROM Editeur WHERE Nom = @NomEditeur
 					PRINT 'L''editeur "' + cast(@NomEditeur AS NVARCHAR) +'" a été supprimé de la base données!'
 				END
-				
+
 				FETCH NEXT FROM Editeur
     				INTO @NomEditeur
 			END
@@ -851,7 +851,7 @@ BEGIN
 		RAISERROR('Le nom d''editeur ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
 	BEGIN
 		IF NOT EXISTS (SELECT * FROM Editeur WHERE Nom = @NomEditeur)
@@ -895,14 +895,14 @@ AS
 BEGIN
 	DECLARE @ROWCOUNT INT
 	SET @ROWCOUNT = 0
-		
+
 	IF EXISTS (SELECT * FROM Editeur WHERE Nom = @NomEditeur)
 	BEGIN
-					
+
 		UPDATE Editeur SET Nom = @NomEditeurNouv WHERE Nom = @NomEditeur
-		
+
 		SET @ROWCOUNT = @@ROWCOUNT
-		
+
 		IF (@ROWCOUNT = 1)
 		BEGIN 
 			PRINT 'Mis à jour le nom!'
@@ -941,13 +941,13 @@ BEGIN
 		RAISERROR('Il faut ajouter au moins un exemplaire!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @DateArrivee = '' OR @DateArrivee = ' '
 	BEGIN
 		RAISERROR('La date d''arrive d''exemplaires ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF EXISTS (SELECT * FROM Edition WHERE ID = @IdEdition)
 	BEGIN
 		WHILE @Nombre > 0
@@ -962,7 +962,7 @@ BEGIN
 					   ,@Usure
 					   ,@IdEdition
 					   ,0)
-		
+
 			SET @Nombre -= 1	
 			PRINT 'Un exemplaire a été ajouté!'				  
 		END				   
@@ -987,13 +987,13 @@ CREATE PROCEDURE filmstock_supprimer
 	@ID_FilmStock INT
 AS
 BEGIN
-	
+
 	IF NOT EXISTS (SELECT *	FROM FilmStock WHERE Id = @ID_FilmStock)
 		BEGIN
 			RAISERROR('Cet exemplaire n''exite pas!', 11, 1);
 			RETURN
 		END
-		
+
 	IF NOT EXISTS (SELECT * FROM Location WHERE FilmStockId = @ID_FilmStock  AND DateRetourEff IS NULL)
 		BEGIN
 			DELETE FROM FilmStock WHERE ID = @ID_FilmStock
@@ -1046,7 +1046,7 @@ BEGIN
 	declare @vide int
 	declare @er int
 	DECLARE @TransactionMain varchar(20) = 'TransactionPrincipale';
-	
+
 
 	/* catalogue */
 	print '-- FIlM --'
@@ -1055,37 +1055,37 @@ BEGIN
 			print 'Un film doit au moins avoir un réalisateur';
 			return 0;
 		END
-	
+
 	IF CHARINDEX('|',@liste_genres)=0
 		RAISERROR('Un film doit au moins avoir un genre', 16, 1);
-	
-		
+
+
 	Select @tmp=count(*) From Film where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp>= 1 /* film déjà au catalogue */
-	
+
 		RAISERROR('%s %d : film déjà au catalogue', 16, 1, @titre_VF, @annee_Sortie);
-		
+
 BEGIN TRAN @TransactionMain		
 	 /* film absent du catalogue, a inserer */
 		BEGIN TRY
 			Print 'L''ajout du film '+ cast(@titre_VF as varchar)+ ' dans la tables Film';
-		
+
 			INSERT into Film(TitreVF,ComplementTitre,TitreVO,AnneeSortie,Synopsis,Langue,SiteWeb,isDeleted)
 					 VALUES ( @titre_VF, @complement_titre, @titre_VO, 
 								 @annee_Sortie, @synopsis, @langue, @site_web,0);
-			
+
 		END TRY
 		BEGIN CATCH
 			--erreur
 			ROLLBACK TRAN @TransactionMain;
 			Print ERROR_MESSAGE();
 			RAISERROR('%s %d : Erreur lors de l''insertion du film :', 16, 1, @titre_VF, @annee_Sortie);
-			
+
 			return -1;
 		END CATCH
-	
-	
+
+
 	/* ACTEUR(S) */
 	print '-- ACTEUR(S) --'
 	-- |Nom,Prenom,Alias,DateNaissance,DateDecesn,Biographie|Nom,Prenom,Alias,DateNaissance,DateDecesn,Biographie|...
@@ -1107,7 +1107,7 @@ BEGIN TRAN @TransactionMain
 		BEGIN
 			SET @liste_acteurs = @liste_acteurs +'|'
 		END
-	
+
 	WHILE @index <> LEN(@liste_acteurs) AND @vide=1
 		BEGIN
 			declare @virg1 int, @virg2 int, @virg3 int, @virg4 int, @virg5 int ;
@@ -1117,52 +1117,52 @@ BEGIN TRAN @TransactionMain
 			set @virg3 = CHARINDEX(',', @liste_acteurs, @virg2+1)
 			set @virg4 = CHARINDEX(',', @liste_acteurs, @virg3+1)	
 			set @virg5 = CHARINDEX(',', @liste_acteurs, @virg4+1)
-				
+
 			set @fin = CHARINDEX('|', @liste_acteurs, @index+1)
-			
+
 			--nom
 			set @nom_act = LTRIM(SUBSTRING(@liste_acteurs, @index+1, @virg1 - @index -1))
-			
+
 			--Prénom
 			set @pre_act = LTRIM(SUBSTRING(@liste_acteurs, @virg1+1, @virg2 - @virg1 -1))
-			
+
 			--Alias
 			Set @alias_act = LTRIM(SUBSTRING(@liste_acteurs, @virg2+1, @virg3 - @virg2 -1))
-			
+
 			--date naissance
 			set @dat_act = LTRIM(SUBSTRING(@liste_acteurs, @virg3+1, @virg4 - @virg3 -1))
-			
+
 			--date deces
 			declare @tmpDate varchar(50)
 			set @tmpDate = LTRIM(SUBSTRING(@liste_acteurs, @virg4+1, @virg5 - @virg4 -1))
 			IF (@tmpDate='' OR @tmpDate=' ' OR @tmpDate='null' OR @tmpDate='NULL')
 				set @dat_deces_act =null
 			ELSE set @dat_deces_act =@tmpDate
-			
+
 			--Biographie
 			set @biographie_act = LTRIM(SUBSTRING(@liste_acteurs, @virg5+1, @fin - @virg5 -1))
-			
-			
+
+
 			set @index = @fin
-			
+
 			--vérifié si la personne existe déja dans la base de données
 			Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 			IF @tmp = 1 -- elle éxiste 
 			Begin
 				Print 'L''acteur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
 				Begin Try
-					
+
 						INSERT FilmActeur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
 							Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
-					
+
 				END Try
 				Begin Catch
-					
+
 					ROLLBACK TRAN @TransactionMain;
 					Print ERROR_MESSAGE();
 					RAISERROR('Erreur lors de l''ajouter de %s %s dans la tables FILMActeur : ', 16, 1, @nom_act, @pre_act);
 					return -1;
-					
+
 					Print ERROR_MESSAGE();
 				End Catch
 			End
@@ -1170,29 +1170,29 @@ BEGIN TRAN @TransactionMain
 				BEGIN
 					Print 'L''acteur '+cast(@nom_act as varchar)+' n''existe pas dans la table Personne, insérer dans la table Personne';				
 					Begin Try
-					
+
 							INSERT Personne (Nom,Prenom,Alias,DateNaissance,DateDeces,Biographie)
 								Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
-								
+
 							INSERT FilmActeur(TitreVF,AnneeSortie,Nom,Prenom,Alias)
 								 Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
-					
+
 					END Try
 					Begin Catch
 						ROLLBACK TRAN @TransactionMain;
 						Print ERROR_MESSAGE();
 						RAISERROR('Erreur lors de l''ajouter de %s %s dans la tables FilmActeur : ', 16, 1, @nom_act, @pre_act);
 					End Catch
-				
+
 				END
 		END
-		
+
 
 	/* --------------------------------------------realisateur(s)------------------------------------------ */
 	print '-- REALISATEUR(S) --'
-	
+
 	set @index= 1
-	
+
 	-- ajout cara | en debut
 	IF CHARINDEX('|', @liste_realisateurs) <> 1
 		BEGIN
@@ -1203,88 +1203,88 @@ BEGIN TRAN @TransactionMain
 		BEGIN
 			SET @liste_realisateurs = @liste_realisateurs +'|'
 		END
-	
+
 	WHILE @index <> LEN(@liste_realisateurs)
 		BEGIN
-			
+
 			set @virg1 = CHARINDEX(',', @liste_realisateurs, @index+1)
 			set @virg2 = CHARINDEX(',', @liste_realisateurs, @virg1+1)
 			set @virg3 = CHARINDEX(',', @liste_realisateurs, @virg2+1)
 			set @virg4 = CHARINDEX(',', @liste_realisateurs, @virg3+1)	
 			set @virg5 = CHARINDEX(',', @liste_realisateurs, @virg4+1)
-				
+
 			set @fin = CHARINDEX('|', @liste_realisateurs, @index+1)
-			
+
 			--nom
 			set @nom_act = LTRIM(SUBSTRING(@liste_realisateurs, @index+1, @virg1 - @index -1))
-			
+
 			--Prénom
 			set @pre_act = LTRIM(SUBSTRING(@liste_realisateurs, @virg1+1, @virg2 - @virg1 -1))
-			
+
 			--Alias
 			Set @alias_act = LTRIM(SUBSTRING(@liste_realisateurs, @virg2+1, @virg3 - @virg2 -1))
-			
+
 			--date naissance
 			set @dat_act = LTRIM(SUBSTRING(@liste_realisateurs, @virg3+1, @virg4 - @virg3 -1))
-			
+
 			--date deces
 			set @tmpDate = LTRIM(SUBSTRING(@liste_realisateurs, @virg4+1, @virg5 - @virg4 -1))
 			IF (@tmpDate='' OR @tmpDate=' ' OR @tmpDate='null' OR @tmpDate='NULL')
 				set @dat_deces_act =null
 			ELSE set @dat_deces_act =@tmpDate
-			
+
 			--Biographie
 			set @biographie_act = LTRIM(SUBSTRING(@liste_realisateurs, @virg5+1, @fin - @virg5 -1))
-			
-			
+
+
 			set @index = @fin
-			
+
 			--vérifié si la personne existe déja dans la base de données
 			Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 			IF @tmp = 1 -- elle éxiste 
 			Begin
 				Print 'Le réalisateur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
 				Begin Try
-					
+
 						INSERT FilmRealisateur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
 							Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
-					
+
 				END Try
 				Begin Catch
 					ROLLBACK TRAN @TransactionMain;
 					Print ERROR_MESSAGE();
 					RAISERROR('Erreur lors de l''ajouter de "%s %s" dans la tables FilmRéalisateur : ', 16, 1, @nom_act,@pre_act);
-					
+
 				End Catch
 			End
 			ELSE /* l'acteur n'existe pas dans la table Acteurs, insérer dans la table Acteurs et dans la table Joue  */
 				BEGIN
 					Print 'Le réalisateur '+cast(@nom_act as varchar)+' n''existe pas dans la table Personne, insérer dans la table Personne';				
 					Begin Try
-						
+
 							INSERT Personne (Nom,Prenom,Alias,DateNaissance,DateDeces,Biographie)
 								Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
-								
+
 							INSERT FilmRealisateur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
 								Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
-						
+
 					END Try
 					Begin Catch
 						ROLLBACK TRAN @TransactionMain;
 						Print ERROR_MESSAGE();
 						RAISERROR('Erreur lors de dans l''ajout de "%s %s" : ', 16, 1, @nom_act,@pre_act );
 					End Catch
-				
+
 				END
 		END
-	
+
 		/* ---------------------------------------------------------------Producteur(S) ---------------------------------------------*/
 	print '-- PRODUCTEUR(S) --'
 	-- |Nom,Prenom,Alias,DateNaissance,DateDecesn,Biographie|Nom,Prenom,Alias,DateNaissance,DateDecesn,Biographie|...
 	-- 0 si film sans producteur
 	set @index= 1
 	set @vide = 1
-	
+
 	IF CHARINDEX('|',@liste_producteurs )=0
 		BEGIN
 			Print ' Film sans producteur'
@@ -1300,7 +1300,7 @@ BEGIN TRAN @TransactionMain
 		BEGIN
 			SET @liste_producteurs = @liste_producteurs +'|'
 		END
-	
+
 	WHILE @index <> LEN(@liste_producteurs) AND @vide=1
 		BEGIN
 			set @virg1 = CHARINDEX(',', @liste_producteurs, @index+1)
@@ -1308,84 +1308,84 @@ BEGIN TRAN @TransactionMain
 			set @virg3 = CHARINDEX(',', @liste_producteurs, @virg2+1)
 			set @virg4 = CHARINDEX(',', @liste_producteurs, @virg3+1)	
 			set @virg5 = CHARINDEX(',', @liste_producteurs, @virg4+1)
-				
+
 			set @fin = CHARINDEX('|', @liste_producteurs, @index+1)
-			
+
 			--nom
 			set @nom_act = LTRIM(SUBSTRING(@liste_producteurs, @index+1, @virg1 - @index -1))
-			
+
 			--Prénom
 			set @pre_act = LTRIM(SUBSTRING(@liste_producteurs, @virg1+1, @virg2 - @virg1 -1))
-			
+
 			--Alias
 			Set @alias_act = LTRIM(SUBSTRING(@liste_producteurs, @virg2+1, @virg3 - @virg2 -1))
-			
+
 			--date naissance
 			set @dat_act = LTRIM(SUBSTRING(@liste_producteurs, @virg3+1, @virg4 - @virg3 -1))
-			
+
 			--date deces
 			--declare @tmpDate varchar(50)
 			set @tmpDate = LTRIM(SUBSTRING(@liste_producteurs, @virg4+1, @virg5 - @virg4 -1))
 			IF (@tmpDate='' OR @tmpDate=' ' OR @tmpDate='null' OR @tmpDate='NULL')
 				set @dat_deces_act =null
 			ELSE set @dat_deces_act =@tmpDate
-			
+
 			--Biographie
 			set @biographie_act = LTRIM(SUBSTRING(@liste_producteurs, @virg5+1, @fin - @virg5 -1))
-			
-			
+
+
 			set @index = @fin
-			
+
 			--vérifié si la personne existe déja dans la base de données
 			Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 			IF @tmp = 1 -- elle éxiste 
 			Begin
 				Print 'Le producteur '+cast(@nom_act as varchar)+' existe déjà dans la table Personne';	
 				Begin Try
-					
+
 						INSERT FilmActeur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
 							Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act)
-					
+
 				END Try
 				Begin Catch
 					ROLLBACK TRAN @TransactionMain;
 					Print ERROR_MESSAGE();
 					RAISERROR('Erreur lors dans l''ajouter de %s %s: ', 16, 1,@nom_act ,@pre_act );
-					
+
 					Print ERROR_MESSAGE();
-					
+
 				End Catch
 			End
 			ELSE /* le producteur n'existe pas dans la table Producteurs, insérer dans la table Producteurs et dans la table Joue  */
 				BEGIN
 					Print 'Le producteur '+cast(@nom_act as varchar)+' n''existe pas dans la table Personne, insérer dans la table Personne';				
 					Begin Try
-						
+
 							INSERT Personne (Nom,Prenom,Alias,DateNaissance,DateDeces,Biographie)
 								Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act);
-								
+
 							INSERT FilmActeur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
 								Values (@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
-						
+
 					END Try
 					Begin Catch
 						ROLLBACK TRAN @TransactionMain;
 						Print ERROR_MESSAGE();
 						RAISERROR('Erreur lors dans l''ajouter de %s %s: ', 16, 1,@nom_act ,@pre_act );
 					End Catch
-				
+
 				END
 		END
-		
+
 
 
 
 	/* --------------------------------------------genre(s)-------------------------------------------- */
 	print '-- GENRE(S) --'
 	-- |genre|genre|genre|...
-	
+
 	set @index= 1
-	
+
 	-- ajout cara | en debut
 	IF CHARINDEX('|', @liste_genres) <> 1
 		BEGIN
@@ -1396,19 +1396,19 @@ BEGIN TRAN @TransactionMain
 		BEGIN
 			SET @liste_genres = @liste_genres +'|'
 		END
-	
+
 	WHILE @index <> LEN(@liste_genres)
 		BEGIN
-				
+
 			set @fin = CHARINDEX('|', @liste_genres, @index+1)
-			
-			
+
+
 			declare @genre_film NVARCHAR(15);
 			--genre
 			set @genre_film = LTRIM(SUBSTRING(@liste_genres, @index+1, @fin - @index -1))
-			
+
 			set @index = @fin
-			
+
 			--vérifié si la personne existe déja dans la base de données
 			Select @tmp = count(*) from Genre Where Genre.Nom=@genre_film;
 			IF @tmp = 1 -- le genre éxiste déjà
@@ -1417,39 +1417,39 @@ BEGIN TRAN @TransactionMain
 				Begin Try
 						INSERT FilmGenre (TitreVF,AnneeSortie,NomGenre)
 							Values (@titre_VF,@annee_Sortie,@genre_film)
-					
+
 				END Try
 				Begin Catch
 					ROLLBACK TRAN @TransactionMain;
 					Print ERROR_MESSAGE();
 					RAISERROR('Erreur dans l''ajout du genre %s : ', 16, 1, @genre_film );
-					
+
 				End Catch
 			End
 			ELSE /* l'acteur n'existe pas dans la table Acteurs, insérer dans la table Acteurs et dans la table Joue  */
 				BEGIN
 					Print 'Le genre : '+cast(@genre_film as varchar)+' n''existe pas dans la table Genre';				
-					
+
 					Begin Try
 							INSERT Genre (Nom)
 								Values (@genre_film);
-								
+
 							INSERT FilmGenre (TitreVF,AnneeSortie,NomGenre)
 								Values (@titre_VF,@annee_Sortie,@genre_film);
-					
+
 					END Try
 					Begin Catch
 						ROLLBACK TRAN @TransactionMain;
 						Print ERROR_MESSAGE();
 						RAISERROR('Erreur dans l''ajout du genre %s : ', 16, 1, @genre_film );
-						
+
 					End Catch
-					
+
 				END
 		END
-		
+
 COMMIT TRAN @TransactionMain
-	
+
 end	
 GO
 
@@ -1473,7 +1473,7 @@ BEGIN
 	Select @tmp = count(*) from Personne Where Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers
 	IF @tmp=0
 		RAISERROR('%s %s : personne n''existe pas dans la table personne', 16, 1, @nom_pers, @prenom_pers);
-		
+
 	Update Personne Set Personne.DateDeces=@date_deces Where  Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers  
 END 
 GO
@@ -1498,7 +1498,7 @@ BEGIN
 	Select @tmp = count(*) from Personne Where Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers
 	IF @tmp=0
 		RAISERROR('%s %s : personne n''existe pas dans la tables personne', 16, 1, @nom_pers, @prenom_pers);
-		
+
 	Update Personne Set Personne.Biographie=@bio_pers Where  Nom=@nom_pers And Prenom=@prenom_pers And Alias=@alias_pers  
 END 
 GO
@@ -1523,11 +1523,11 @@ BEGIN
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0
 		RAISERROR('%s %d: film n''existe pas dans la tables Film', 16, 1, @titre_VF,@annee_Sortie);
-	
+
 	Update Film Set Film.SiteWeb=@site_web where Film.TitreVF=@titre_VF AND 
 				Film.AnneeSortie=@annee_Sortie;
-	
-	
+
+
 END  
 GO
 
@@ -1560,11 +1560,11 @@ BEGIN
 	Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 	IF @tmp=0--No, inserer la
 		Insert Personne Values (@nom_act,@pre_act,@alias_act,@dat_act,@dat_deces_act,@biographie_act)
-	
+
 	--créer le lien entre film et personne
 	Insert FilmActeur (TitreVF,AnneeSortie,Nom,Prenom,Alias)
 			 values(@titre_VF,@annee_Sortie,@nom_act,@pre_act,@alias_act);
-	
+
 END	
 GO
 
@@ -1592,12 +1592,12 @@ Begin
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0--no, erreur
 		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
-		
+
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_act And Prenom=@pre_act And Alias=@alias_act
 	IF @tmp=0--No, erreur
 		RAISERROR('%s %s: La personne n''existe pas', 16, 1, @nom_act,@pre_act);
-		
+
 	Delete FilmActeur where FilmActeur.Nom=@titre_VF AND FilmActeur.AnneeSortie=@annee_Sortie AND
 							FilmActeur.Nom=@nom_act AND FilmActeur.Prenom=@pre_act AND
 							FilmActeur.Alias=@alias_act;
@@ -1633,11 +1633,11 @@ Begin
 	Select @tmp = count(*) from Personne Where Nom=@nom_real And Prenom=@pre_real And Alias=@alias_real
 	IF @tmp=0--No, inserer la
 		Insert Personne Values (@nom_real,@pre_real,@alias_real,@dat_real,@dat_deces_real,@biographie_real)
-	
+
 	--créer le lien entre film et personne
 	Insert FilmRealisateur(TitreVF,AnneeSortie,Nom,Prenom,Alias)
 			 values(@titre_VF,@annee_Sortie,@nom_real,@pre_real,@alias_real);
-	
+
 	Print 'Le réalisateur '+@nom_real+' '+@pre_real+' est bien inséré pour '+@titre_VF+' '+@annee_Sortie;
 End
 GO
@@ -1665,16 +1665,16 @@ Begin
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0--no, erreur
 		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
-		
+
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_real And Prenom=@pre_real And Alias=@alias_real
 	IF @tmp=0--No, erreur
 		RAISERROR('%s %s: La personne n''existe pas', 16, 1, @nom_real,@pre_real);
-		
+
 	Delete FilmRealisateur where FilmRealisateur.TitreVF=@titre_VF AND FilmRealisateur.AnneeSortie=@annee_Sortie AND
 							FilmRealisateur.Nom=@nom_real AND FilmRealisateur.Prenom=@pre_real AND
 							FilmRealisateur.Alias=@alias_real;
-							
+
 	Print 'Le réalisateur '+@nom_real+' '+@pre_real+' est bien suprrimer de '+@titre_VF+' '+@annee_Sortie;
 END			
 GO
@@ -1709,11 +1709,11 @@ Begin
 	Select @tmp = count(*) from Personne Where Nom=@nom_prod And Prenom=@pre_prod And Alias=@alias_prod
 	IF @tmp=0--No, inserer la
 		Insert Personne Values (@nom_prod,@pre_prod,@alias_prod,@dat_prod,@dat_deces_prod,@biographie_prod)
-	
+
 	--créer le lien entre film et personne
 	Insert FilmProducteur(TitreVF,AnneeSortie,NomProducteur,PrenomProducteur,AliasProducteur)
 			values(@titre_VF,@annee_Sortie,@nom_prod,@pre_prod,@alias_prod);
-	
+
 	Print 'Le producteur '+@nom_prod+' '+@pre_prod+' est bien inséré pour '+@titre_VF+' '+@annee_Sortie;
 End
 GO
@@ -1741,19 +1741,19 @@ Begin
 				Film.AnneeSortie=@annee_Sortie;
 	IF @tmp=0--no, erreur
 		RAISERROR('%s : Film n''existe pas dans le catalogue', 16, 1, @titre_VF);
-		
+
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_prod And Prenom=@pre_prod And Alias=@alias_prod
 	IF @tmp=0--No, erreur
 		RAISERROR('%s %s: La personne n''existe pas', 16, 1, @nom_prod,@pre_prod);
-		
+
 	Delete FilmProducteur where FilmProducteur.TitreVF=@titre_VF AND FilmProducteur.AnneeSortie=@annee_Sortie AND
 							FilmProducteur.NomProducteur=@nom_prod AND FilmProducteur.PrenomProducteur=@pre_prod AND
 							FilmProducteur.AliasProducteur=@alias_prod;
-							
-							
+
+
 	Print 'Le producteur '+@nom_prod+' '+@pre_prod+' est bien supprimé de '+@titre_VF+' '+@annee_Sortie;
-	
+
 END
 GO
 
@@ -1778,17 +1778,17 @@ Begin
 	Select @tmp = count(*) from Film Where Film.TitreVF=@titre_VF And Film.AnneeSortie=@annee_film;
 	IF @tmp=0--No, erreur
 		RAISERROR('%s %d: Film n''existe pas dans le catalogue', 16, 1, @titre_VF,@annee_film);
-	
+
 	--vérifié si la distionction existe déjà
 	Select @tmp = count(*) from TypeDistinction Where TypeDistinction.Nom=@nom_dist;
 	IF @tmp=0--No, inserer la
 		Insert TypeDistinction Values (@nom_dist);
-	
+
 	Insert FilmDistinction (Annee,TitreVF,AnneeSortie,NomDistinction)
 			 Values(@annee_dist,@titre_VF,@annee_film,@nom_dist);
-	
+
 	Print 'Le distinction '+@nom_dist+' est bien rajouté pour '+@titre_VF;
-		
+
 End
 
 GO
@@ -1818,16 +1818,16 @@ Begin
 			set @titre_VF =null
 			set @annee_film=null	
 		END
-	
+
 	--vérifié si le film existe
 	IF(@titre_VF=null)
 		Begin
 			Select @tmp = count(*) from Film Where Film.TitreVF=@titre_VF And Film.AnneeSortie=@annee_film;
 			IF @tmp=0--No, erreur
 				RAISERROR('%s %d: Film n''existe pas dans le catalogue', 16, 1, @titre_VF,@annee_film);
-		
+
 		END
-	
+
 	--vérifié si la personne existe déjà	
 	Select @tmp = count(*) from Personne Where Nom=@nom_pers And Prenom=@pre_pers And Alias=@alias_pers
 	IF @tmp=0
@@ -1840,7 +1840,7 @@ Begin
 	--inserer la distionction	
 	Insert PersonneDistinction (Annee,TitreVF,AnneeSortie,NomDistinction,Nom,Prenom,Alias)
 			Values(@annee_dist,@titre_VF,@annee_film,@nom_dist,@nom_pers,@pre_pers,@alias_pers);
-	
+
 	Print 'Le distinction '+@nom_dist+' est bien rajouté pour '+@titre_VF+' '+@annee_film;
 END
 GO
@@ -1863,7 +1863,7 @@ Begin
   DECLARE @nom_pers NVARCHAR(64);
 	DECLARE @prenom_pers NVARCHAR(64);
 	DECLARE @alias_pers NVARCHAR(64);
-	
+
 	DECLARE PersonneNonRef CURSOR FOR
 		Select Nom,Prenom,Alias
 			from (
@@ -1873,7 +1873,7 @@ Begin
 				union
 				Select p.Nom,p.Prenom,p.Alias, f.TitreVF as TitreFilm from Personne p Left Outer join FilmProducteur f On p.Nom=f.NomProducteur AND p.Prenom=f.PrenomProducteur AND p.Alias=f.AliasProducteur
 				)as a
-				
+
 			Group by Nom,Prenom,Alias
 			having count(TitreFilm)=0;
 
@@ -1885,7 +1885,7 @@ Begin
     BEGIN
 		Print 'suppression de : '+@nom_pers+' '+@prenom_pers;
 		DELETE FROM Personne WHERE Personne.Nom=@nom_pers and Personne.Prenom=@prenom_pers and Personne.Alias=@alias_pers;
-		
+
 		FETCH NEXT FROM PersonneNonRef
     		INTO @nom_pers,@prenom_pers,@alias_pers
     END
@@ -1894,7 +1894,7 @@ Begin
     
 END
 GO
-	
+
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
 /* Procedure de suppression d'un film                */
@@ -1907,7 +1907,7 @@ GO
 CREATE PROCEDURE dbo.film_supprimer
 	@titre_VF NVARCHAR(128),
 	@annee_Sortie SMALLINT
-	
+
 AS
 Begin	
 	declare @tmp int
@@ -1922,26 +1922,26 @@ Begin
 	IF @tmp=0 /* film déjà au catalogue */
 		begin
 			print cast(@titre_VF as varchar)+', '+cast(@annee_Sortie as varchar)+' film n''est pas dans le catalogue';
-			
+
 			return 0;
 		end
-		
+
 BEGIN TRAN @TransactionMain	
 	Begin Try	
 		--indiquer que le film est supprimer
 		Update Film set IsDeleted=1 Where Film.TitreVF=@titre_VF AND 
 					Film.AnneeSortie=@annee_Sortie;
-					
-		
+
+
 		--supprimer les éditions
-		
-		
+
+
 		DECLARE @id_edition INT;
-	
+
 		DECLARE EdtionToDelete CURSOR FOR
 			Select id From dbo.Edition where Edition.FilmTitreVF=@titre_VF AND 
 					Edition.FilmTitreVF=@annee_Sortie;
-				
+
 
 		OPEN EdtionToDelete
 		FETCH NEXT FROM EdtionToDelete
@@ -1951,21 +1951,21 @@ BEGIN TRAN @TransactionMain
 		BEGIN
 			--Print 'suppression de N°: '+cast(@id_edition as varchar);
 			Exec IBDR_SAR.dbo.edition_supprimer @id_edition;
-			
+
 			FETCH NEXT FROM EdtionToDelete
     			INTO @id_edition
 		END
 		CLOSE EdtionToDelete
 		DEALLOCATE EdtionToDelete		
-				
+
 				--//TODO		
-			
+
 		--On supprime en cascade le film
-		
+
 		Begin
 			print 'Suppréssion du film :'+cast(@titre_VF as varchar)+', '+cast(@annee_Sortie as varchar)+' des tables FilmActeur,FilmRéalisateur,FilmGenre,FilmProducteur, FilmDistinction';
-			
-				
+
+
 			Delete FilmActeur Where FilmActeur.TitreVF=@titre_VF and FilmActeur.AnneeSortie=@annee_Sortie;
 			Delete FilmDistinction Where FilmDistinction.TitreVF=@titre_VF and FilmDistinction.AnneeSortie=@annee_Sortie;
 			Delete FilmGenre Where FilmGenre.TitreVF=@titre_VF and FilmGenre.AnneeSortie=@annee_Sortie;
@@ -1973,26 +1973,26 @@ BEGIN TRAN @TransactionMain
 			Delete FilmRealisateur Where FilmRealisateur.TitreVF=@titre_VF and FilmRealisateur.AnneeSortie=@annee_Sortie;
 			Delete PersonneDistinction Where PersonneDistinction.TitreVF=@titre_VF and PersonneDistinction.AnneeSortie=@annee_Sortie;
 			exec dbo.Personne_nettoyage ;
-			
+
 			--verifié qu'il n'y a pas d'edition lié à ce film
 			Select @tmp=count(*) From Edition where Edition.FilmTitreVF=@titre_VF AND 
 					Edition.FilmTitreVF=@annee_Sortie;
-					
+
 			IF @tmp=0
 				Delete Film Where Film.TitreVF=@titre_VF and Film.AnneeSortie=@annee_Sortie;
-					
+
 		End	
-			
+
 	End Try
 	Begin Catch
 		ROLLBACK TRAN @TransactionMain;
 		Print ERROR_MESSAGE();
 		RAISERROR('Erreur lors de la suppréssion du film %s %d : ', 16, 1,@titre_VF ,@annee_Sortie );
-		
+
 	End Catch
-		
-		
-	
+
+
+
 
 Commit TRAN @TransactionMain		
 END
@@ -2032,133 +2032,133 @@ BEGIN
 		RAISERROR('La civilite ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Nom IS NULL
 	BEGIN
 		RAISERROR(' Le nom ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Prenom IS NULL
 	BEGIN
 		RAISERROR(' Le prenom ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @DateNaissance IS NULL
 	BEGIN
 		RAISERROR(' La DateNaissance ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Mail IS NULL
 	BEGIN
 		RAISERROR(' Mail ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Telephone1 IS NULL
 	BEGIN
 		RAISERROR(' Le numero de téléphone  ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @NumRue IS NULL
 	BEGIN
 		RAISERROR(' Le numero de la rue  ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @TypeRue IS NULL
 	BEGIN
 		RAISERROR(' Le type de la rue ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @NomRue IS NULL
 	BEGIN
 		RAISERROR(' Le nom de la rue ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @CodePostal IS NULL
 	BEGIN
 		RAISERROR(' Le code postal ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Ville IS NULL
 	BEGIN
 		RAISERROR(' Le nom de la ville ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Nom LIKE '%[^A-Za-z ''-]%'
 	BEGIN
 		RAISERROR(' Nom non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Prenom LIKE '%[^A-Za-z ''-]%'
 	BEGIN
 		RAISERROR(' Prenom non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @DateNaissance < '01/01/1900'
 	BEGIN
 		RAISERROR(' Date de	Naissance non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Civilite LIKE '%[^A-Za-z ''-]%'
 	BEGIN
 		RAISERROR(' Civilité non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @NomRue LIKE '%[^A-Za-z ''-]%'
 	BEGIN
 		RAISERROR(' Nom de rue non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @NumRue <= 0
 	BEGIN
 		RAISERROR(' Numero de rue  non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @TypeRue  NOT IN ('Rue', 'Avenue', 'Passage', 'Impasse', 'Route')
 	BEGIN
 		RAISERROR(' Type de rue non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @CodePostal NOT LIKE '[0-9][A-Ba-b0-9][0-9][0-9][0-9]'
 	BEGIN
 		RAISERROR(' Code postal non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Ville  LIKE '%[^A-Za-z ''-]%'
 	BEGIN
 		RAISERROR('ville non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Telephone1 NOT LIKE '0'+replicate('[0-9]',9)
 	BEGIN
 		RAISERROR('ville non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Telephone2 NOT LIKE '0'+replicate('[0-9]',9)
 	BEGIN
 		RAISERROR('ville non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF  EXISTS (SELECT *
 		FROM Client
 		WHERE Nom=@NOM  and  Prenom=@Prenom  and  Mail=@Mail)
@@ -2202,7 +2202,7 @@ BEGIN
 				@Ville             ,
 				0       
 				  )
-				  
+
 		PRINT 'Client bien ajouté'
 	END
 END
@@ -2242,37 +2242,37 @@ BEGIN
 		RAISERROR(' le prix mensuel ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @PrixLocation IS NULL
 	BEGIN
 		RAISERROR(' le prix location ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @MaxJoursLocation IS NULL
 	BEGIN
 		RAISERROR(' le nombre de jour de location ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @NbMaxLocations IS NULL
 	BEGIN
 		RAISERROR(' Nombe de location ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @PrixRetard IS NULL
 	BEGIN
 		RAISERROR(' le prix du retard ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @DureeEngagement IS NULL
 	BEGIN
 		RAISERROR(' La duree d''engagement  ne doit pas être null', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @Nom LIKE '%[^A-Za-z ''-]%'
 	BEGIN
 		RAISERROR(' Le nom  non valide', 9, 1);
@@ -2283,37 +2283,37 @@ BEGIN
 		RAISERROR(' le prix mensuel non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @PrixLocation <= 0
 	BEGIN
 		RAISERROR(' le prix location non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @MaxJoursLocation <= 0
 	BEGIN
 		RAISERROR(' le nombre de jour de location non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @NbMaxLocations <= 0
 	BEGIN
 		RAISERROR(' Nombre de location non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @PrixRetard < 0
 	BEGIN
 		RAISERROR(' le prix du retard non valide', 9, 1);
 		RETURN;
 	END
-	
+
 	IF @DureeEngagement < 0
 	BEGIN
 		RAISERROR(' La duree d''engagement  non valide', 9, 1);
 		RETURN;
 	END
-	
+
 
 	IF  NOT EXISTS (SELECT *
 		FROM TypeAbonnement
@@ -2384,43 +2384,43 @@ BEGIN
 		RAISERROR(' La date de fin de l''abonnement ne doit pas être null', 9, 1);
 		RETURN;
 	END	
-	
+
 	IF @NomClient IS NULL
 	BEGIN
 		RAISERROR(' Le nom du client ne doit pas être null', 9, 1);
 		RETURN;
 	END	
-	
+
 	IF @PrenomClient IS NULL
 	BEGIN
 		RAISERROR(' Le prenom du client ne doit pas être null', 9, 1);
 		RETURN;
 	END	
-	
+
 	IF @MailClient IS NULL
 	BEGIN
 		RAISERROR(' Le mail du client ne doit pas être null', 9, 1);
 		RETURN;
 	END	
-	
+
 	IF @TypeAbonnement IS NULL
 	BEGIN
 		RAISERROR(' Le type de l''abonnement ne doit pas être null', 9, 1);
 		RETURN;
 	END	
-	
+
 	IF  NOT EXISTS (SELECT * FROM dbo.TypeAbonnement WHERE @TypeAbonnement=dbo.TypeAbonnement.Nom)  
 	BEGIN
 		RAISERROR(' Type d''abonnement non valide', 9, 1);
 		RETURN;
 	END	
-	
+
 	IF  EXISTS (SELECT * FROM dbo.TypeAbonnement WHERE @TypeAbonnement=dbo.TypeAbonnement.Nom AND dbo.TypeAbonnement.estdispo=0)  
 	BEGIN
 		RAISERROR(' Type d''abonnement non valide', 9, 1);
 		RETURN;
 	END	
-	
+
 	IF @DateDebut < CURRENT_TIMESTAMP
 	BEGIN
 		RAISERROR(' Date de debut non valide', 9, 1);
@@ -2507,7 +2507,7 @@ BEGIN
 	SET dbo.TypeAbonnement.estdispo = 0
 	WHERE @Nom=Nom
 	END 
-	 
+
 	ELSE
 	BEGIN
 	DELETE dbo.TypeAbonnement
@@ -2978,7 +2978,7 @@ BEGIN
 		RAISERROR('Pas de location correspondante', 10, 1)
 		RETURN
 	END
-	
+
     -- TODO : Ajouter check temps, impossible de confirmer réservation en dehors d'un intervalle défini
     UPDATE Location
     SET Confirmee = 1
@@ -3053,7 +3053,7 @@ CREATE PROCEDURE dbo.edition_creer_sans_rollback
 	@ListEditeurs NVARCHAR(640),
 	@ListLangueAudio NVARCHAR(640),
 	@ListLangueSousTitres NVARCHAR(640)
-	
+
 
 AS
 BEGIN
@@ -3063,31 +3063,31 @@ BEGIN
 		RAISERROR('Ce film n''existe pas dans la base donnée!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @NomEdition = '' OR @NomEdition = ' '
 	BEGIN
 		RAISERROR('Le nom d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF EXISTS (SELECT * FROM Edition WHERE NomEdition = @NomEdition)
 	BEGIN
 		RAISERROR('Existe déjà une edition avec ce nom!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @Duree = '' OR @Duree = ' '
 	BEGIN
 		RAISERROR('La duree d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @DateSortie = '' OR @DateSortie = ' '
 	BEGIN
 		RAISERROR('La date de sortie d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @Support = '' OR @Support = ' '
 	BEGIN
 		RAISERROR('Le support d''edition ne peut pas être vide!', 11, 1);
@@ -3099,13 +3099,13 @@ BEGIN
 		RAISERROR('Ce pays n''existe pas dans la base donnée!', 11, 1);
 		RETURN
 	END
-	
+
 	IF @AgeInterdiction = '' OR @AgeInterdiction = ' '
 	BEGIN
 		RAISERROR('L''age d''interdiction d''edition ne peut pas être vide!', 11, 1);
 		RETURN
 	END
-	
+
     DECLARE @vide INT
     SET @vide = 1
     
@@ -3125,7 +3125,7 @@ BEGIN
 	BEGIN
 		SET @ListEditeurs = @ListEditeurs +'|'
 	END
-	
+
 	/** Vérifier s'il y a 'LangueAudio' **/
 	IF CHARINDEX('|', @ListEditeurs) = 0
 	BEGIN
@@ -3142,7 +3142,7 @@ BEGIN
 	BEGIN
 		SET @ListLangueAudio = @ListLangueAudio +'|'
 	END
-	
+
 	/** Vérifier s'il y a 'LangueSousTitres' **/
 	IF CHARINDEX('|', @ListLangueSousTitres) = 0
 	BEGIN
@@ -3159,12 +3159,12 @@ BEGIN
 	BEGIN
 		SET @ListLangueSousTitres = @ListLangueSousTitres +'|'
 	END
-	
+
 	DECLARE @ID_Edition INT
 	DECLARE @ERROR_LANGUE INT
 	DECLARE @ROWCOUNT INT
 	SET @ROWCOUNT = 0
-	
+
 	BEGIN TRAN ADD_EDITION
 		IF (@vide=1)
 		BEGIN 
@@ -3190,27 +3190,27 @@ BEGIN
 						@NomEdition,
 						@AgeInterdiction,
 						0)
-			
-			
+
+
 			SET @ROWCOUNT = @@ROWCOUNT
-			
+
 			IF (@ROWCOUNT = 1)
 			BEGIN
 				SET @ID_Edition = @@IDENTITY
 			END
 		END
-		
+
 		DECLARE @index INT, @fin INT
 		SET @index = 1
-		
+
 		WHILE @index <> LEN(@ListEditeurs) AND @vide=1 AND @ROWCOUNT = 1
 		BEGIN
 			DECLARE @NomEditeur NVARCHAR(64)
-			
+
 			SET @fin = CHARINDEX('|', @ListEditeurs, @index+1)
-			
+
 			SET @NomEditeur = LTRIM(SUBSTRING(@ListEditeurs , @index+1, @fin - @index-1))
-			
+
 			IF NOT EXISTS (SELECT *
 					FROM Editeur
 					WHERE Nom = @NomEditeur)
@@ -3220,7 +3220,7 @@ BEGIN
 						   (Nom)
 					 VALUES
 						   (@NomEditeur)
-				
+
 				PRINT 'Editeur "' + cast(@NomEditeur AS NVARCHAR) +'" ajouté!'
 			END
 
@@ -3230,21 +3230,21 @@ BEGIN
 				 VALUES
 					   (@ID_Edition
 					   ,@NomEditeur)
-			
+
 			SET @index = @fin
-			
+
 		END
-			
+
 		SET @index = 1
-		
+
 		WHILE @index <> LEN(@ListLangueAudio) AND @vide=1 AND @ROWCOUNT = 1
 		BEGIN
 			DECLARE @LangueAudio NVARCHAR(64)
-			
+
 			SET @fin = CHARINDEX('|', @ListLangueAudio, @index+1)
-			
+
 			SET @LangueAudio = LTRIM(SUBSTRING(@ListLangueAudio , @index+1, @fin - @index-1))
-			
+
 			BEGIN TRY 
 				INSERT INTO EditionLangueAudio
 						   (IdEdition
@@ -3258,21 +3258,21 @@ BEGIN
 				--ROLLBACK TRAN ADD_EDITION
 				--RETURN
 			END CATCH
-					   
+
 			SET @index = @fin
-			
+
 		END
-		
+
 		SET @index = 1
-		
+
 		WHILE @index <> LEN(@ListLangueSousTitres) AND @vide=1 AND @ROWCOUNT = 1
 		BEGIN
 			DECLARE @LangueSousTitres NVARCHAR(64)
-			
+
 			SET @fin = CHARINDEX('|', @ListLangueSousTitres, @index+1)
-			
+
 			SET @LangueSousTitres = LTRIM(SUBSTRING(@ListLangueSousTitres , @index+1, @fin - @index-1))
-			
+
 			BEGIN TRY
 				INSERT INTO EditionLangueSousTitres
 					   (IdEdition
@@ -3280,18 +3280,18 @@ BEGIN
 				 VALUES
 					   (@ID_Edition
 					   ,@LangueSousTitres)
-				
+
 			END TRY
 			BEGIN CATCH		
 				RAISERROR('L''opération avortée : cette langue n''existe pas dans la base donnée!', 11, 1);
 				--ROLLBACK TRAN ADD_EDITION
 				--RETURN
 			END CATCH
-			
+
 			SET @index = @fin
-			
+
 		END
-	
+
 	COMMIT TRAN ADD_EDITION
 	PRINT 'Edition "' + cast(@NomEdition AS NVARCHAR) +'" ajoutée!'
 END			

@@ -63,7 +63,7 @@ GO
 ------------------------------------------
 ALTER TABLE [dbo].[FilmStock]
 ADD 
-	CONSTRAINT chk_filmstock_datearrivee CHECK ([DateArrivee] >= GETDATE()),
+--	CONSTRAINT chk_filmstock_datearrivee CHECK ([DateArrivee] >= GETDATE()),
 	CONSTRAINT chk_filmstock_usure CHECK ([Usure] >= 0)
 GO
 
