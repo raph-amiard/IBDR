@@ -1,4 +1,42 @@
-﻿IF OBJECT_ID ( 'niveau_relance_sur_retard', 'P' ) IS NOT NULL 
+﻿Use IBDR_SAR;
+GO
+
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de nettoyage pour les réservation non   */
+/* honorées                                          */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+-------------------------------------------------------
+IF OBJECT_ID ( 'nottoyage_Reservation', 'P' ) IS NOT NULL 
+    DROP PROCEDURE nottoyage_Reservation;
+GO
+
+CREATE PROCEDURE [dbo].[nottoyage_Reservation]
+AS 
+BEGIN
+	DELETE Location
+	WHERE DateLocation < CURRENT_TIMESTAMP and Confirmee = 0;
+END
+GO
+
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de relance sur retard                   */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+-------------------------------------------------------
+IF OBJECT_ID (N'dbo.maxRelanceRetard', N'FN') IS NOT NULL
+    DROP FUNCTION dbo.maxRelanceRetard;
+GO
+CREATE FUNCTION [dbo].[maxRelanceRetard]() Returns int
+AS
+Begin
+	Return (5);
+End;
+GO
+
+IF OBJECT_ID ( 'niveau_relance_sur_retard', 'P' ) IS NOT NULL 
     DROP PROCEDURE niveau_relance_sur_retard;
 GO
 
@@ -6,12 +44,12 @@ CREATE PROCEDURE [dbo].[niveau_relance_sur_retard]
 AS 
 BEGIN
 	DECLARE @max INT
-	SET @max = 5
+	SELECT @max = dbo.maxRelanceRetard();
 	DECLARE @id_location INT
 	DECLARE @dateRetourPrev DATETIME
 	DECLARE Retard CURSOR FOR
 		SELECT Id, DateRetourPrev FROM Location
-		WHERE DateRetourEff is null
+		WHERE DateRetourEff is null and Confirmee = 1
 	OPEN Retard
 	FETCH NEXT FROM Retard
 		INTO @id_location, @dateRetourPrev
@@ -69,6 +107,31 @@ BEGIN
 END
 GO
 
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de relance sur decouvert                */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+-------------------------------------------------------
+IF OBJECT_ID (N'dbo.maxRelanceDécouvert', N'FN') IS NOT NULL
+    DROP FUNCTION dbo.maxRelanceDécouvert;
+GO
+CREATE FUNCTION [dbo].[maxRelanceDécouvert]() Returns int
+AS
+Begin
+	Return (5);
+End;
+GO
+
+IF OBJECT_ID (N'dbo.MinSoldeDécouvert', N'FN') IS NOT NULL
+    DROP FUNCTION dbo.MinSoldeDécouvert;
+GO
+CREATE FUNCTION [dbo].[MinSoldeDécouvert]() Returns int
+AS
+Begin
+	Return (0);
+End;
+GO
 
 IF OBJECT_ID ( 'relance_sur_découvert', 'P' ) IS NOT NULL 
     DROP PROCEDURE relance_sur_découvert;
@@ -77,9 +140,9 @@ CREATE PROCEDURE [dbo].[relance_sur_découvert]
 AS
 BEGIN
 	DECLARE @MinSolde SMALLMONEY
-	SET @MinSolde = 0
+	SELECT @MinSolde = dbo.MinSoldeDécouvert();
 	DECLARE @MaxRelance INT
-	SET @MaxRelance = 5
+	SELECT @MaxRelance = dbo.maxRelanceDécouvert();
 	DECLARE @id_abonnement INT
 	DECLARE Decouvert CURSOR FOR
 		SELECT Id FROM Abonnement
@@ -133,6 +196,13 @@ BEGIN
 END 
 GO
 
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de relace sur decouvert                 */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+-------------------------------------------------------
+
 IF OBJECT_ID ( 'echeance_prochaine_abonnement', 'P' ) IS NOT NULL 
     DROP PROCEDURE echeance_prochaine_abonnement;
 GO
@@ -164,3 +234,4 @@ BEGIN
 	CLOSE AbonementFin
 	DEALLOCATE AbonementFin
 END
+GO
