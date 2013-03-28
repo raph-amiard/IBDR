@@ -1,10 +1,31 @@
 USE master;
-IF (OBJECT_ID('dbo.siege_social_init_distribution') IS NOT NULL)
-  DROP PROCEDURE dbo.siege_social_init_distribution
+
+IF (OBJECT_ID('dbo.drop_distribution') IS NOT NULL)
+  DROP PROCEDURE dbo.drop_distribution
 GO
-CREATE PROCEDURE dbo.siege_social_init_distribution
+CREATE PROCEDURE dbo.drop_distribution
 AS
 BEGIN
+	exec sp_dropdistpublisher @publisher = @@SERVERNAME
+	exec sp_dropdistributiondb @database = N'distribution'
+	exec sp_dropdistributor @no_checks = 1, @ignore_distributor = 1
+END
+GO
+
+
+IF (OBJECT_ID('dbo.init_distribution') IS NOT NULL)
+  DROP PROCEDURE dbo.init_distribution
+GO
+CREATE PROCEDURE dbo.init_distribution
+AS
+BEGIN
+	BEGIN TRY
+		exec dbo.drop_distribution
+	END TRY
+	BEGIN CATCH
+		PRINT 'First run of init distribution'
+	END CATCH
+	
 	exec sp_adddistributor @distributor = @@SERVERNAME, @password = N''
 
 	exec sp_MSupdate_agenttype_default @profile_id = 1
@@ -29,15 +50,16 @@ END
 GO
 
 USE IBDR_SAR;
-IF (OBJECT_ID('dbo.siege_social_drop_distribution') IS NOT NULL)
-  DROP PROCEDURE dbo.siege_social_drop_distribution
+
+
+IF (OBJECT_ID('dbo.Internal_Server_Name') IS NOT NULL)
+  DROP FUNCTION dbo.Internal_Server_Name
 GO
-CREATE PROCEDURE dbo.siege_social_drop_distribution
+CREATE FUNCTION dbo.Internal_Server_Name(@server_name nvarchar(512)) 
+RETURNS nvarchar(512)
 AS
 BEGIN
-	exec sp_dropdistpublisher @publisher = @@SERVERNAME
-	exec sp_dropdistributiondb @database = N'distribution'
-	exec sp_dropdistributor @no_checks = 1, @ignore_distributor = 1
+	RETURN SUBSTRING(@server_name, CHARINDEX('\', @server_name)+1, 512);
 END
 GO
 
@@ -113,6 +135,13 @@ BEGIN
 					   @destination_table = N'Succursales', @destination_owner = N'dbo', @vertical_partition = N'false', 
 					   @ins_cmd = N'CALL sp_MSins_dboSuccursales', @del_cmd = N'CALL sp_MSdel_dboSuccursales', 
 					   @upd_cmd = N'SCALL sp_MSupd_dboSuccursales'
+	exec sp_addarticle @publication = N'IBDR_Global', 
+					   @article = N'Client', @source_owner = N'dbo', @source_object = N'Client', 
+					   @type = N'logbased', @description = null, @creation_script = null, @pre_creation_cmd = N'drop', 
+					   @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', 
+					   @destination_table = N'Client', @destination_owner = N'dbo', @vertical_partition = N'false', 
+					   @ins_cmd = N'CALL sp_MSins_dboClient', @del_cmd = N'CALL sp_MSdel_dboClient', 
+					   @upd_cmd = N'SCALL sp_MSupd_dboClient'
 	exec sp_startpublication_snapshot @publication = N'IBDR_Global';
 END
 GO
@@ -123,14 +152,16 @@ GO
 CREATE PROCEDURE dbo.siege_social_init
 AS
 BEGIN
-	INSERT INTO Succursales (NomServeur, SiegeSocial) VALUES (@@SERVERNAME, 1);
-	exec ('use master; exec dbo.siege_social_init_distribution')
+	INSERT INTO Succursales (NomServeur, NomServeurFull, SiegeSocial) 
+	VALUES (dbo.Internal_Server_Name(@@SERVERNAME), @@SERVERNAME, 1);
+	
+	exec ('use master; exec dbo.init_distribution')
 	exec dbo.siege_social_creer_global_publication;
 END
 GO
 
 -- exec dbo.succursale_init 'RAPH-DESKTOP-W7\IBDR_1';
--- exec dbo.siege_social_drop_distribution;
+-- exec dbo.drop_distribution;
 -- exec dbo.siege_social_init;
 
 
@@ -157,7 +188,9 @@ CREATE PROCEDURE dbo.siege_social_add_succursale
 	@Succursale NVARCHAR(512)
 AS
 BEGIN
-	INSERT INTO Succursales (NomServeur, SiegeSocial) VALUES (@Succursale, 0);
+	INSERT INTO Succursales (NomServeur, NomServeurFull, SiegeSocial) 
+	VALUES (dbo.Internal_Server_Name(@Succursale), @Succursale, 0);
+	
 	exec dbo.siege_social_creer_global_souscription @Succursale;
 END
 GO
@@ -181,12 +214,16 @@ CREATE PROCEDURE dbo.succursale_init
 	@serveur_siege_social nvarchar(512)
 AS
 BEGIN
-	exec sp_addlinkedserver @server='SIEGE_SOCIAL', @provider='SQLNCLI', @datasrc=@serveur_siege_social, @srvproduct=N'';
-	exec sp_serveroption @server='SIEGE_SOCIAL', @optname='rpc', @optvalue='true'
-	exec sp_serveroption @server='SIEGE_SOCIAL', @optname='rpc out', @optvalue='true'
+	DECLARE @ServerName nvarchar(512)
+	SET @ServerName = dbo.Internal_Server_Name(@serveur_siege_social)
 	
+	exec ('use master; exec dbo.init_distribution')
+	exec sp_addlinkedserver @server=@ServerName, @provider='SQLNCLI', @datasrc=@serveur_siege_social, @srvproduct=N'';
+	exec sp_serveroption @server=@ServerName, @optname='rpc', @optvalue='true'
+	exec sp_serveroption @server=@ServerName, @optname='rpc out', @optvalue='true'
+
 	declare @sql nvarchar(max)
-	exec SIEGE_SOCIAL.IBDR_SAR.dbo.siege_social_add_succursale @@SERVERNAME;
+	exec ('exec ' + @ServerName + '.IBDR_SAR.dbo.siege_social_add_succursale @@SERVERNAME')
 	exec succursale_creer_global_souscription @serveur_siege_social
 END
 GO
