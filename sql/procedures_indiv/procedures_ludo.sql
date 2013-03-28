@@ -3,7 +3,7 @@ GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
-/* Procédure de nettoyage pour les réservation non   */
+/* Procédure de nettoyage pour les réservations non   */
 /* honorées                                          */
 /* Auteur  : GOUYOU Ludovic - TA                     */
 /* Auteur  : GOUYOU Ludovic - TA                     */
@@ -17,6 +17,39 @@ AS
 BEGIN
 	DELETE Location
 	WHERE DateLocation < CURRENT_TIMESTAMP and Confirmee = 0;
+END
+GO
+
+-------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                            */
+/* Procédure de nettoyage pour les clients           */
+/* blacklistés                                       */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+/* Auteur  : GOUYOU Ludovic - TA                     */
+-------------------------------------------------------
+IF OBJECT_ID ('nottoyage_Blacklist_Reservation_concern', 'V') IS NOT NULL
+    DROP VIEW nottoyage_Blacklist_Reservation_concern ;
+GO
+CREATE VIEW [dbo].[nottoyage_Blacklist_Reservation_concern]
+AS
+	SELECT l.Id FROM Location	as l
+		inner join FilmStock as fs
+		 on l.FilmStockId = fs.Id
+		inner join Abonnement as a
+		 on l.AbonnementId = a.Id
+		inner join Client as c
+		 on a.NomClient = c.Nom and a.MailClient = c.Mail and a.PrenomClient = c.Prenom
+		where c.BlackListe = 1 and l.Confirmee = 0;
+GO
+
+IF OBJECT_ID ( 'nettoyage_Blacklist', 'P' ) IS NOT NULL 
+    DROP PROCEDURE nettoyage_Blacklist;
+GO
+
+CREATE PROCEDURE [dbo].[nettoyage_Blacklist]
+AS 
+BEGIN
+	SELECT * from nottoyage_Blacklist_Reservation_concern;
 END
 GO
 
@@ -198,20 +231,29 @@ GO
 
 -------------------------------------------------------
 /* IBDR 2013 - Groupe SAR                            */
-/* Procédure de relace sur decouvert                 */
+/* Procédure de relance échéance abonnement          */
 /* Auteur  : GOUYOU Ludovic - TA                     */
 /* Auteur  : GOUYOU Ludovic - TA                     */
 -------------------------------------------------------
+IF OBJECT_ID (N'dbo.DateDiff_echeance_prochaine', N'FN') IS NOT NULL
+    DROP FUNCTION dbo.DateDiff_echeance_prochaine;
+GO
+CREATE FUNCTION [dbo].[DateDiff_echeance_prochaine]() Returns int
+AS
+Begin
+	Return (5);
+End;
+GO
 
 IF OBJECT_ID ( 'echeance_prochaine_abonnement', 'P' ) IS NOT NULL 
     DROP PROCEDURE echeance_prochaine_abonnement;
 GO
-CREATE PROCEDURE [dbo].[echeance_prochaine_abonnement] (
-	@DateDiff INT
-)
+CREATE PROCEDURE [dbo].[echeance_prochaine_abonnement]
 AS
 BEGIN
 	DECLARE @id_abonnement INT
+	DECLARE @DateDiff INT
+	SELECT @DateDiff = dbo.DateDiff_echeance_prochaine();
 	DECLARE @dateFIN DATETIME 
 	DECLARE AbonementFin CURSOR FOR
 		SELECT Abonnement.Id, Abonnement.DateFin FROM Abonnement
@@ -227,7 +269,7 @@ BEGIN
 		INTO @id_abonnement, @dateFIN
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
-		PRINT('Abonnement ' + CAST(@id_abonnement AS VARCHAR) + ' arrive a son terme le ' + CAST(@dateFIN AS VARCHAR))
+		PRINT('Votre abonnement ' + CAST(@id_abonnement AS VARCHAR) + ' arrive à son terme le ' + CAST(@dateFIN AS VARCHAR))
 		FETCH NEXT FROM AbonementFin
 			INTO @id_abonnement, @dateFIN
 	END
