@@ -96,7 +96,7 @@ select Location.DateLocation, Location.DateRetourPrev, Location.DateRetourEff, L
 	and Abonnement.PrenomClient = Client.Prenom
 	and Abonnement.MailClient = Client.Mail
 
-EXEC nottoyage_Reservation;
+EXEC nettoyage_Reservation;
 
 select Location.DateRetourPrev, Location.DateRetourEff, Location.AbonnementId, Location.Confirmee, 
 		Abonnement.NomClient, Abonnement.PrenomClient, Abonnement.MailClient,
