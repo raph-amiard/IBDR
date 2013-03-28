@@ -1,9 +1,6 @@
 Use IBDR_SAR
 GO
 
-select dbo.ISOweek();
-GO
-
 
 --------------------------------------------------
 /* IBDR 2013 - Groupe SAR                       */
