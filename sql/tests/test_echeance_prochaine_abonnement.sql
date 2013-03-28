@@ -84,7 +84,11 @@ UPDATE Abonnement
 UPDATE Abonnement
 	set DateFin = CURRENT_TIMESTAMP+4
 	where Id = 1
-
+	
+UPDATE Abonnement
+	set DateDebut = CURRENT_TIMESTAMP-10
+	where Id = 0
+	
 UPDATE Abonnement
 	set DateFin = CURRENT_TIMESTAMP-1
 	where Id = 0
@@ -112,7 +116,6 @@ select	Abonnement.Id, Abonnement.DateFin,
 	and Abonnement.MailClient = Client.Mail
 
 EXEC echeance_prochaine_abonnement
-	@DateDiff = 5
 
 PRINT 'Apres execution'
 
