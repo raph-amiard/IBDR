@@ -51,8 +51,9 @@ GO
 
 USE IBDR_SAR;
 
-
-IF (OBJECT_ID('dbo.Internal_Server_Name') IS NOT NULL)
+IF  EXISTS (SELECT * FROM sys.objects 
+            WHERE object_id = OBJECT_ID(N'dbo.Internal_Server_Name') 
+            AND type in (N'FN', N'IF', N'TF', N'FS', N'FT'))
   DROP FUNCTION dbo.Internal_Server_Name
 GO
 CREATE FUNCTION dbo.Internal_Server_Name(@server_name nvarchar(512)) 
@@ -62,6 +63,25 @@ BEGIN
 	RETURN SUBSTRING(@server_name, CHARINDEX('\', @server_name)+1, 512);
 END
 GO
+
+IF (OBJECT_ID('dbo.ajouter_serveur_lie') IS NOT NULL)
+  DROP PROCEDURE dbo.ajouter_serveur_lie
+GO
+CREATE PROCEDURE dbo.ajouter_serveur_lie
+	@serveur_lie nvarchar(512)
+AS
+BEGIN
+	BEGIN TRY
+		DECLARE @ServerName NVARCHAR(512);
+		SET @ServerName = dbo.Internal_Server_Name(@serveur_lie)
+		exec sp_addlinkedserver @server=@ServerName, @provider='SQLNCLI', @datasrc=@serveur_lie, @srvproduct=N'';
+		exec sp_serveroption @server=@ServerName, @optname='rpc', @optvalue='true'
+		exec sp_serveroption @server=@ServerName, @optname='rpc out', @optvalue='true'
+	END TRY
+	BEGIN CATCH
+		PRINT 'Server already exists'
+	END CATCH
+END
 
 IF (OBJECT_ID('dbo.siege_social_creer_global_publication') IS NOT NULL)
   DROP PROCEDURE dbo.siege_social_creer_global_publication
@@ -142,6 +162,13 @@ BEGIN
 					   @destination_table = N'Client', @destination_owner = N'dbo', @vertical_partition = N'false', 
 					   @ins_cmd = N'CALL sp_MSins_dboClient', @del_cmd = N'CALL sp_MSdel_dboClient', 
 					   @upd_cmd = N'SCALL sp_MSupd_dboClient'
+	exec sp_addarticle @publication = N'IBDR_Global', 
+					   @article = N'TypeAbonnement', @source_owner = N'dbo', @source_object = N'TypeAbonnement', 
+					   @type = N'logbased', @description = null, @creation_script = null, @pre_creation_cmd = N'drop', 
+					   @schema_option = 0x000000000803509F, @identityrangemanagementoption = N'manual', 
+					   @destination_table = N'TypeAbonnement', @destination_owner = N'dbo', @vertical_partition = N'false', 
+					   @ins_cmd = N'CALL sp_MSins_dboTypeAbonnement', @del_cmd = N'CALL sp_MSdel_dboTypeAbonnement', 
+					   @upd_cmd = N'SCALL sp_MSupd_dboTypeAbonnement'
 	exec sp_startpublication_snapshot @publication = N'IBDR_Global';
 END
 GO
@@ -160,10 +187,10 @@ BEGIN
 END
 GO
 
--- exec dbo.succursale_init 'RAPH-DESKTOP-W7\IBDR_1';
+-- exec dbo.succursale_init 'RAPH-PC\IBDR_0';
 -- exec dbo.drop_distribution;
 -- exec dbo.siege_social_init;
-
+-- exec dbo.succursale_ajouter_abonnement_souscription_souscriveur 'RAPH-PC\IBDR_2';
 
 IF (OBJECT_ID('dbo.siege_social_creer_global_souscription') IS NOT NULL)
   DROP PROCEDURE dbo.siege_social_creer_global_souscription
@@ -195,6 +222,53 @@ BEGIN
 END
 GO
 
+IF (OBJECT_ID('dbo.succursale_ajouter_abonnement_souscription_publieur') IS NOT NULL)
+  DROP PROCEDURE dbo.succursale_ajouter_abonnement_souscription_publieur
+GO
+CREATE PROCEDURE dbo.succursale_ajouter_abonnement_souscription_publieur
+	@serveur_souscripteur NVARCHAR(128)
+AS
+BEGIN
+	exec sp_addmergesubscription @publication = N'IBDR_Abonnements', 
+		@subscriber = @serveur_souscripteur, @subscriber_db = N'IBDR_SAR', 
+		@subscription_type = N'pull', @subscriber_type = N'global', 
+		@subscription_priority = 75, @sync_type = N'Automatic'
+END
+GO
+
+IF (OBJECT_ID('dbo.succursale_ajouter_abonnement_souscription_souscriveur') IS NOT NULL)
+  DROP PROCEDURE dbo.succursale_ajouter_abonnement_souscription_souscriveur
+GO
+CREATE PROCEDURE dbo.succursale_ajouter_abonnement_souscription_souscriveur
+	@serveur_publieur NVARCHAR(128)
+AS
+BEGIN
+	exec dbo.ajouter_serveur_lie @serveur_publieur;
+	declare @isname nvarchar(512)
+	SET @isname = dbo.Internal_Server_Name(@serveur_publieur);
+	
+	exec ('exec ' + @isname + '.IBDR_SAR.dbo.succursale_ajouter_abonnement_souscription_publieur @@SERVERNAME');
+	
+	exec sp_addmergepullsubscription @publisher = @serveur_publieur, 
+									 @publication = N'IBDR_Abonnements', @publisher_db = N'IBDR_SAR', 
+									 @subscriber_type = N'Global', @subscription_priority = 75, 
+									 @description = N'', @sync_type = N'Automatic'
+									 
+	exec sp_addmergepullsubscription_agent @publisher = @serveur_publieur, 
+										   @publisher_db = N'IBDR_SAR', @publication = N'IBDR_Abonnements', 
+										   @distributor = @serveur_publieur, @distributor_security_mode = 1, 
+										   @distributor_login = N'', @distributor_password = null, 
+										   @enabled_for_syncmgr = N'False', @frequency_type = 64, 
+										   @frequency_interval = 0, @frequency_relative_interval = 0, 
+										   @frequency_recurrence_factor = 0, @frequency_subday = 0, @frequency_subday_interval = 0, 
+										   @active_start_time_of_day = 0, @active_end_time_of_day = 235959, @active_start_date = 20130328, 
+										   @active_end_date = 99991231, @alt_snapshot_folder = N'', @working_directory = N'', 
+										   @use_ftp = N'False', @job_login = null, @job_password = null, @publisher_security_mode = 1, 
+										   @publisher_login = null, @publisher_password = null, @use_interactive_resolver = N'False', 
+										   @dynamic_snapshot_location = null, @use_web_sync = 0
+END
+GO
+
 IF (OBJECT_ID('dbo.succursale_creer_global_souscription') IS NOT NULL)
   DROP PROCEDURE dbo.succursale_creer_global_souscription
 GO
@@ -214,16 +288,23 @@ CREATE PROCEDURE dbo.succursale_init
 	@serveur_siege_social nvarchar(512)
 AS
 BEGIN
-	DECLARE @ServerName nvarchar(512)
-	SET @ServerName = dbo.Internal_Server_Name(@serveur_siege_social)
-	
+
 	exec ('use master; exec dbo.init_distribution')
-	exec sp_addlinkedserver @server=@ServerName, @provider='SQLNCLI', @datasrc=@serveur_siege_social, @srvproduct=N'';
-	exec sp_serveroption @server=@ServerName, @optname='rpc', @optvalue='true'
-	exec sp_serveroption @server=@ServerName, @optname='rpc out', @optvalue='true'
+	exec dbo.ajouter_serveur_lie @serveur_siege_social
+	
+	declare @server_name nvarchar(128)
+	SET @server_name = dbo.Internal_Server_Name(@serveur_siege_social)
+	
+	-- Init Publication Abonnements
+	exec sp_replicationdboption @dbname = N'IBDR_SAR', @optname = N'merge publish', @value = N'true'
+	exec sp_addmergepublication @publication = N'IBDR_Abonnements', @description = N'Merge publication of database ''IBDR_SAR'' from Publisher ''RAPH-PC\IBDR_1''.', @sync_mode = N'native', @retention = 14, @allow_push = N'true', @allow_pull = N'true', @allow_anonymous = N'true', @enabled_for_internet = N'false', @snapshot_in_defaultfolder = N'true', @compress_snapshot = N'false', @ftp_port = 21, @ftp_subdirectory = N'ftp', @ftp_login = N'anonymous', @allow_subscription_copy = N'false', @add_to_active_directory = N'false', @dynamic_filters = N'false', @conflict_retention = 14, @keep_partition_changes = N'false', @allow_synctoalternate = N'false', @max_concurrent_merge = 0, @max_concurrent_dynamic_snapshots = 0, @use_partition_groups = null, @publication_compatibility_level = N'100RTM', @replicate_ddl = 1, @allow_subscriber_initiated_snapshot = N'false', @allow_web_synchronization = N'false', @allow_partition_realignment = N'true', @retention_period_unit = N'days', @conflict_logging = N'both', @automatic_reinitialization_policy = 0
+	exec sp_addpublication_snapshot @publication = N'IBDR_Abonnements', @frequency_type = 4, @frequency_interval = 1, @frequency_relative_interval = 1, @frequency_recurrence_factor = 0, @frequency_subday = 1, @frequency_subday_interval = 5, @active_start_time_of_day = 500, @active_end_time_of_day = 235959, @active_start_date = 0, @active_end_date = 0, @job_login = null, @job_password = null, @publisher_security_mode = 1
+	exec sp_addmergearticle @publication = N'IBDR_Abonnements', @article = N'Abonnement', @source_owner = N'dbo', @source_object = N'Abonnement', @type = N'table', @description = null, @creation_script = null, @pre_creation_cmd = N'drop', @schema_option = 0x000000010C034FD1, @identityrangemanagementoption = N'auto', @pub_identity_range = 10000, @identity_range = 1000, @threshold = 80, @destination_owner = N'dbo', @force_reinit_subscription = 1, @column_tracking = N'false', @subset_filterclause = null, @vertical_partition = N'false', @verify_resolver_signature = 1, @allow_interactive_resolver = N'false', @fast_multicol_updateproc = N'true', @check_permissions = 0, @subscriber_upload_options = 0, @delete_tracking = N'true', @compensate_for_errors = N'false', @stream_blob_columns = N'false', @partition_options = 0
+	exec sp_addmergearticle @publication = N'IBDR_Abonnements', @article = N'Abonnement_Partage', @source_owner = N'dbo', @source_object = N'Abonnement_Partage', @type = N'table', @description = null, @creation_script = null, @pre_creation_cmd = N'drop', @schema_option = 0x000000010C034FD1, @identityrangemanagementoption = N'manual', @destination_owner = N'dbo', @force_reinit_subscription = 1, @column_tracking = N'false', @subset_filterclause = N'[SuccursaleDest]  = @@SERVERNAME', @vertical_partition = N'false', @verify_resolver_signature = 1, @allow_interactive_resolver = N'false', @fast_multicol_updateproc = N'true', @check_permissions = 0, @subscriber_upload_options = 0, @delete_tracking = N'true', @compensate_for_errors = N'false', @stream_blob_columns = N'false', @partition_options = 0
+	exec sp_addmergefilter @publication = N'IBDR_Abonnements', @article = N'Abonnement', @filtername = N'Abonnement_Abonnement_Partage', @join_articlename = N'Abonnement_Partage', @join_filterclause = N'[Abonnement_Partage].[IdAbonnement] = [Abonnement].[Id] AND [Abonnement_Partage].[SuccursaleAbo] = [Abonnement].[Succursale]', @join_unique_key = 1, @filter_type = 1, @force_invalidate_snapshot = 1, @force_reinit_subscription = 1
 
 	declare @sql nvarchar(max)
-	exec ('exec ' + @ServerName + '.IBDR_SAR.dbo.siege_social_add_succursale @@SERVERNAME')
+	exec ('exec ' + @server_name + '.IBDR_SAR.dbo.siege_social_add_succursale @@SERVERNAME')
 	exec succursale_creer_global_souscription @serveur_siege_social
 END
 GO
