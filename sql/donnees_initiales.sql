@@ -11,7 +11,7 @@ INSERT INTO dbo.Langue (Nom) VALUES
 	(N'chinois'),	(N'cingalais'),	(N'comoreen'),	(N'coreen'),
 	(N'creole'),	(N'croate'),	(N'danois'),	(N'dari'),
 	(N'dioula'),	(N'djerma'),	(N'espagnol'),	(N'estonien'),
-	(N'ewe'),		(N'fang'),		(N'finnois'),	(N'fon'),
+	(N'ewe'),		(N'fang'),		(N'finnois'),	(N'fon'), (N'français'),
 	(N'gaelic '),	(N'georgien'),	(N'gou'),		(N'grec'),
 	(N'haoussa'),	(N'hebreu'),	(N'hindi'),		(N'hongrois'),
 	(N'italien'),	(N'indonesien'),(N'japonais'),	(N'kanakry'),
