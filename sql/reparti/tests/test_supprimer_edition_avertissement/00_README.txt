@@ -4,6 +4,8 @@ Ce test a pour but montrer le cas de suppression d'une édition.
 Cette suppression vas supprimer aussi tous les exemplaires de cette édition 
 qui se trouvent dans les succursales.
 
+Mais comme il y a un exemplaire loué, l'édition ne sera pas supprimer.
+
 ### Mode d'emploi
 
 Pour executer ce test, il faut executer les scripts dans l'ordre suivant :

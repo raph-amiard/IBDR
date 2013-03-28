@@ -3080,8 +3080,6 @@ BEGIN
     			INTO @ID_FilmStock
 			WHILE @@FETCH_STATUS = 0
 			BEGIN
-				
-				PRINT @ID_FilmStock
 
 				SELECT @sqlstring = 'SELECT @COUNT= COUNT(*) FROM ' + @NOM_Succursale + N'.IBDR_SAR.dbo.Location WHERE FilmStockId = '+ CAST(@ID_FilmStock AS VARCHAR) + ' AND DateRetourEff IS NULL'
 				EXEC sp_executesql 
