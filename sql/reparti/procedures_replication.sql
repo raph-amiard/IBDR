@@ -218,6 +218,7 @@ BEGIN
 	INSERT INTO Succursales (NomServeur, NomServeurFull, SiegeSocial) 
 	VALUES (dbo.Internal_Server_Name(@Succursale), @Succursale, 0);
 	
+	exec dbo.ajouter_serveur_lie @Succursale;
 	exec dbo.siege_social_creer_global_souscription @Succursale;
 END
 GO

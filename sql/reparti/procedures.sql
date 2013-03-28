@@ -3049,9 +3049,10 @@ BEGIN
 	DECLARE @ExemplaireLoue BIT
 	SET @ExemplaireLoue = 0
 	
-	DECLARE @sqlstring as nvarchar(500)
+	DECLARE @sqlstring NVARCHAR(500)
 	
 	DECLARE @NOM_Succursale NVARCHAR(128)
+	
 	DECLARE Succursales CURSOR FOR
 		SELECT NomServeur FROM Succursales
 	OPEN Succursales
@@ -3062,7 +3063,7 @@ BEGIN
 		
 		IF (@NOM_Succursale != dbo.Internal_Server_Name(@@SERVERNAME))
 		BEGIN
-		
+			
 			DECLARE @COUNT INT
 			SET @COUNT = 0
 			
