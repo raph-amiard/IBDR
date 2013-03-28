@@ -3025,3 +3025,151 @@ BEGIN
     EXEC dbo._ajouter_location @id_abonnement, @id_edition, @date_debut, @date_fin, 0
 END
 GO
+
+---------------------------------------------------------------
+/* IBDR 2013 - Groupe SAR                                    */
+/* Procedure pour supprimer une Edition dans le cas reparti  */
+/* Auteur  : MUNOZ Yupanqui - SAR                            */
+/* Testeur : MUNOZ Yupanqui - SAR                            */
+---------------------------------------------------------------
+IF (OBJECT_ID('dbo.edition_supprimer_reparti') IS NOT NULL)
+  DROP PROCEDURE dbo.edition_supprimer_reparti
+GO
+CREATE PROCEDURE dbo.edition_supprimer_reparti
+	@ID_Edition INT
+AS
+BEGIN
+
+	IF NOT EXISTS (SELECT * FROM Edition WHERE ID = @ID_Edition)
+	BEGIN
+		RAISERROR('Cette edition n''existe pas!', 11, 1);
+		RETURN
+	END
+	
+	DECLARE @ExemplaireLoue BIT
+	SET @ExemplaireLoue = 0
+	
+	DECLARE @sqlstring as nvarchar(500)
+	
+	DECLARE @NOM_Succursale NVARCHAR(128)
+	DECLARE Succursales CURSOR FOR
+		SELECT NomServeur FROM Succursales
+	OPEN Succursales
+	FETCH NEXT FROM Succursales
+		INTO @NOM_Succursale
+	WHILE @@FETCH_STATUS = 0
+	BEGIN
+		
+		IF (@NOM_Succursale != dbo.Internal_Server_Name(@@SERVERNAME))
+		BEGIN
+		
+			DECLARE @COUNT INT
+			SET @COUNT = 0
+			
+			DECLARE @TableID TABLE
+				(id INT);
+				
+			DECLARE @ID_FilmStock INT
+			SELECT @sqlstring = 'SELECT ID FROM ' + @NOM_Succursale + '.IBDR_SAR.dbo.FilmStock WHERE IdEdition = ' + CAST(@ID_Edition AS VARCHAR)
+			INSERT INTO @TableID EXEC sp_executesql @sqlstring
+			
+			DECLARE FilmStock CURSOR FOR
+				SELECT id FROM @TableID
+			OPEN FilmStock
+			FETCH NEXT FROM FilmStock
+    			INTO @ID_FilmStock
+			WHILE @@FETCH_STATUS = 0
+			BEGIN
+				
+				PRINT @ID_FilmStock
+
+				SELECT @sqlstring = 'SELECT @COUNT= COUNT(*) FROM ' + @NOM_Succursale + N'.IBDR_SAR.dbo.Location WHERE FilmStockId = '+ CAST(@ID_FilmStock AS VARCHAR) + ' AND DateRetourEff IS NULL'
+				EXEC sp_executesql 
+					@query = @sqlstring, 
+					@params = N'@COUNT INT OUTPUT', 
+					@COUNT = @COUNT OUTPUT 
+					 
+				IF ( @COUNT = 0 )
+				BEGIN
+					BEGIN TRY	
+						SELECT @sqlstring = 'DELETE FROM ' + @NOM_Succursale + N'.IBDR_SAR.dbo.FilmStock WHERE ID = ' + CAST(@ID_FilmStock AS VARCHAR)
+						EXEC sp_executesql @sqlstring
+					END TRY
+					BEGIN CATCH		
+						RAISERROR('L''opération avortée : erreur en supprimer exemplaire!', 11, 1);
+						RETURN
+					END CATCH
+				END
+				ELSE
+				BEGIN
+					SELECT @sqlstring = 'UPDATE ' + @NOM_Succursale + N'.IBDR_SAR.dbo.FilmStock SET Supprimer = 1 WHERE ID = ' + CAST(@ID_FilmStock AS VARCHAR)
+					EXEC sp_executesql @sqlstring
+					SET @ExemplaireLoue = 1
+				END
+				
+				FETCH NEXT FROM FilmStock
+    				INTO @ID_FilmStock
+			END
+			CLOSE FilmStock
+			DEALLOCATE FilmStock
+		END
+		
+		FETCH NEXT FROM Succursales
+    			INTO @NOM_Succursale
+	END
+	CLOSE Succursales
+	DEALLOCATE Succursales
+	    
+	-- S'il n'y pas d'exemplaire de l'edition loue 
+	IF (@ExemplaireLoue = 0)
+	BEGIN
+		BEGIN TRAN SUPP_EDITION
+			DECLARE @NomEditeur NVARCHAR(64)
+			DECLARE Editeur CURSOR FOR
+				SELECT NomEditeur FROM EditeurEdition WHERE IdEdition = @ID_Edition
+			OPEN Editeur
+			FETCH NEXT FROM Editeur
+				INTO @NomEditeur
+			WHILE @@FETCH_STATUS = 0
+			BEGIN
+				BEGIN TRY
+					 DELETE FROM EditeurEdition WHERE IdEdition = @ID_Edition AND NomEditeur = @NomEditeur
+					 
+					 IF NOT EXISTS (SELECT * FROM EditeurEdition WHERE NomEditeur = @NomEditeur)
+					BEGIN
+						DELETE FROM Editeur WHERE Nom = @NomEditeur
+						
+						PRINT 'Editeur "' + cast(@NomEditeur AS NVARCHAR) + '" supprimé!'
+					END
+				END TRY
+				BEGIN CATCH		
+					RAISERROR('L''opération avortée : erreur en supprimer editeur!', 11, 1);
+					ROLLBACK TRAN SUPP_EDITION
+					RETURN
+				END CATCH
+				
+				FETCH NEXT FROM Editeur
+					INTO @NomEditeur
+			END
+			CLOSE Editeur
+			DEALLOCATE Editeur
+		    
+			BEGIN TRY
+				DELETE FROM Edition WHERE ID = @ID_Edition
+			END TRY
+			BEGIN CATCH		
+				RAISERROR('L''opération avortée : erreur en supprimer edition!', 11, 1);
+				ROLLBACK TRAN SUPP_EDITION
+				RETURN
+			END CATCH
+			
+			PRINT 'Edition supprimée!'
+		COMMIT TRAN SUPP_EDITION
+	END
+	ELSE
+	BEGIN
+		UPDATE Edition SET Supprimer = 1 WHERE ID = @ID_Edition		
+		RAISERROR('Edition ne peut pas être supprimée, car il y a un examplaire loué!', 11, 1);
+	END
+END    
+GO
