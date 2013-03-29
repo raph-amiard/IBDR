@@ -1,6 +1,15 @@
 Use IBDR_SAR
 GO
 
+IF OBJECT_ID (N'dbo.MinSoldeDecouvert', N'FN') IS NOT NULL
+    DROP FUNCTION dbo.MinSoldeDecouvert;
+GO
+CREATE FUNCTION [dbo].[MinSoldeDecouvert]() Returns SMALLMONEY
+AS
+Begin
+	Return (0);
+End;
+GO
 
 --------------------------------------------------
 /* IBDR 2013 - Groupe SAR                       */
@@ -2965,16 +2974,6 @@ Begin
 End;
 GO
 
-IF OBJECT_ID (N'dbo.MinSoldeDécouvert', N'FN') IS NOT NULL
-    DROP FUNCTION dbo.MinSoldeDécouvert;
-GO
-CREATE FUNCTION [dbo].[MinSoldeDécouvert]() Returns int
-AS
-Begin
-	Return (0);
-End;
-GO
-
 IF OBJECT_ID ( 'relance_sur_découvert_out', 'P' ) IS NOT NULL 
     DROP PROCEDURE relance_sur_découvert_out;
 GO
@@ -3010,7 +3009,7 @@ CREATE PROCEDURE [dbo].[relance_sur_découvert]
 AS
 BEGIN
 	DECLARE @MinSolde SMALLMONEY
-	SELECT @MinSolde = dbo.MinSoldeDécouvert();
+	SELECT @MinSolde = dbo.MinSoldeDecouvert();
 	DECLARE @MaxRelance INT
 	SELECT @MaxRelance = dbo.maxRelanceDécouvert();
 	DECLARE @id_abonnement INT
@@ -3256,6 +3255,7 @@ BEGIN
     DECLARE @montant MONEY
     DECLARE @age_client INT
     DECLARE @prix_loc SMALLMONEY
+    DECLARE @solde SMALLMONEY
     
 	SET @id_filmstock = -1
     -- Récupère un id_filmstock disponible de l'édition
@@ -3276,7 +3276,8 @@ BEGIN
     WHERE ta.Nom = (SELECT TypeAbonnement FROM Abonnement WHERE Id = @id_abonnement)
     SET @duree_max_loc = @nb_max_jour_loc * 24 * 60 * 60
 
-    SELECT @age_client = (DATEPART(year, getdate()) - DATEPART(year, c.DateNaissance))
+    SELECT @age_client = (DATEPART(year, getdate()) - DATEPART(year, c.DateNaissance)),
+		   @solde = a.Solde
     FROM Client c, Abonnement a
     WHERE c.Nom = a.NomClient AND c.Prenom = a.PrenomClient AND c.Mail = a.MailClient
     AND a.Id = @id_abonnement;
@@ -3291,6 +3292,14 @@ BEGIN
     -- Calcule le prix final de la location
     -- TODO : This is todo biatch
     SET @montant = @prix_loc * (@duree_loc / (24*60*60))
+    SET @solde = @solde - @montant;
+    
+    IF @solde < dbo.MinSoldeDecouvert()
+    begin
+		RAISERROR('Solde insuffisant', 9, 1)
+		RETURN
+    end
+    
     
     -- Si le client ne peut louer autant de jours
     IF @duree_loc > @duree_max_loc
@@ -3318,6 +3327,8 @@ BEGIN
                                 @id_filmstock,
                                 @confirmee)
 		PRINT 'Location ajoutée'
+		UPDATE Abonnement SET Solde = @solde WHERE Id = @id_abonnement;
+		PRINT 'Solde déduit'
 		RETURN @id_filmstock
 	END
 END
