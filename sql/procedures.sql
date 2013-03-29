@@ -2875,17 +2875,27 @@ BEGIN
 	SELECT @max = dbo.maxRelanceRetard();
 	DECLARE @id_location INT
 	DECLARE @dateRetourPrev DATETIME
+	DECLARE @numAbo INT
+	DECLARE @somRetard SMALLMONEY
 	DECLARE Retard CURSOR FOR
-		SELECT Id, DateRetourPrev FROM Location
+		SELECT Id, DateRetourPrev, AbonnementId FROM Location
 		WHERE DateRetourEff is null and Confirmee = 1
 	OPEN Retard
 	FETCH NEXT FROM Retard
-		INTO @id_location, @dateRetourPrev
+		INTO @id_location, @dateRetourPrev, @numAbo
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
 		IF @dateRetourPrev < CURRENT_TIMESTAMP
 		BEGIN
-
+			SELECT @somRetard = t.PrixRetard from Abonnement
+			inner join TypeAbonnement as t
+			ON Abonnement.TypeAbonnement = t.Nom
+			WHERE Abonnement.Id = @numAbo
+			
+			UPDATE Abonnement
+			SET Solde -= @somRetard
+			WHERE Abonnement.Id = @numAbo
+			
 			IF NOT EXISTS (	
 				SELECT * FROM RelanceRetard 
 				WHERE LocationId = @id_location
@@ -2932,7 +2942,7 @@ BEGIN
 			END
 		END
 		FETCH NEXT FROM Retard
-			INTO @id_location, @dateRetourPrev
+			INTO @id_location, @dateRetourPrev, @numAbo
 	END
 	CLOSE Retard
 	DEALLOCATE Retard

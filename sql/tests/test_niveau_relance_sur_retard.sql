@@ -82,7 +82,7 @@ INSERT INTO [dbo].[RelanceRetard] ([Date], [LocationId], [Niveau]) VALUES (N'201
 
 PRINT 'Avant execution'
 select RelanceRetard.LocationId, RelanceRetard.Date, RelanceRetard.Niveau, 
-		Location.DateRetourPrev, Location.DateRetourEff, Location.AbonnementId, 
+		Location.DateRetourPrev, Location.DateRetourEff, Location.AbonnementId, Abonnement.Solde,
 		Abonnement.NomClient, Abonnement.PrenomClient, Abonnement.MailClient,
 		Client.BlackListe
 	from Location
@@ -98,7 +98,7 @@ select RelanceRetard.LocationId, RelanceRetard.Date, RelanceRetard.Niveau,
 EXEC niveau_relance_sur_retard
 
 select Location.FilmStockId, Location.Id as LocationId, RelanceRetard.Date, RelanceRetard.Niveau, 
-		Location.DateRetourPrev, Location.DateRetourEff, Location.AbonnementId, 
+		Location.DateRetourPrev, Location.DateRetourEff, Location.AbonnementId,  Abonnement.Solde,
 		Abonnement.NomClient, Abonnement.PrenomClient, Abonnement.MailClient,
 		Client.BlackListe
 	from Location

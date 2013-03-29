@@ -1,3 +1,0 @@
-Use IBDR_SAR
-GO
-
