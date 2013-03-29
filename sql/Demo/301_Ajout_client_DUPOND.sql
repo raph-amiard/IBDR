@@ -8,7 +8,7 @@ EXEC client_creer
 	@Nom='DUPOND',
 	@Prenom='François',
 	@DateNaissance=@date,
-	@Mail='toto.tata@gmail.com',
+	@Mail='François.DUPOND@gmail.com',
 	@Telephone1='0525636595',
 	@Telephone2='0145786933',	
 	@NumRue=6,

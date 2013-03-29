@@ -9,9 +9,9 @@ SET @dateFin = CURRENT_TIMESTAMP+40;
 EXEC abonnement_creer
 	@DateDebut =  @dateDebut,
 	@DateFin = @dateFin,
-	@NomClient =  'JEAN',
-	@PrenomClient = 'David',
-	@MailClient = 'JEAN.David@yahoo.fr' ,
+	@NomClient =  'DUPOND',
+	@PrenomClient = 'François',
+	@MailClient='François.DUPOND@gmail.com',
 	@TypeAbonnement = 'Complet'
 
 select Abonnement.*, TypeAbonnement.Nom, Client.Nom, Client.Prenom, Client.Mail 
