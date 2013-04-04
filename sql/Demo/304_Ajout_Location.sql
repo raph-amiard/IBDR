@@ -9,6 +9,10 @@ SELECT @date_fin_loc = DATEADD(day, 2, CURRENT_TIMESTAMP)
 SELECT TOP(1) @edi_ID = Edition.Id from Edition
 SELECT TOP(1) @abo_ID = Abonnement.Id from Abonnement
 
+	EXEC compte_reapprovisioner
+		@Id = @abo_ID,
+		@AjoutSolde = 20000
+
 EXEC dbo.location_ajouter
 	@id_abonnement = @abo_ID,
 	@id_edition = @edi_ID,
